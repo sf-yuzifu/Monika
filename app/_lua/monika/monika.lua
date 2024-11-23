@@ -10,6 +10,35 @@ local STATE_POSITION_BOTTOM = 3
 
 local MONIKA_STATE = 1
 local current_time
+local totalText = {
+    ----------上午-----------
+    "早安，愿你的每一天都如诗如画。",
+    "早安，愿你的世界洒满阳光。",
+    "早上好，今天也要加油呦～",
+    "早上好！今天也要元气满满！",
+    ----------下午-----------
+    "午安，心中有你，真好。",
+    "下午好，思念如风。",
+    "午后时光，愿你我皆安好无忧。",
+    "午梦轻扬，愿你笑如阳。",
+    ----------晚上-----------
+    "夜晚的宁静，愿你我皆好梦。",
+    "夜幕低垂，你是我心中最亮的星。",
+    "晚安，愿你的梦里都是甜蜜与幸福。",
+    "晚安，做个好梦哦！",
+    ----------日常-----------
+    "亲爱的，我也喜欢你。",
+    "能这样与你在一起，是我的荣幸。",
+    "Just Monika.",
+    "欢迎，希望你喜欢这里。",
+    "我一直在等着你。",
+    "嘿，今天也要一起努力。",
+    "遇到困难一定要振作啊！",
+    "别怕，有我在你身后！",
+    ----------彩蛋-----------
+    "怎么样，吓到你了吗？",
+}
+
 local text = 1
 
 local getTime = function()
@@ -25,21 +54,21 @@ end
 
 local return_text = function(i)
     if i == "night" then
-        return math.random(7, 9)
+        return math.random(9, 12)
     elseif i == "morning" then
-        return math.random(1, 3)
+        return math.random(1, 4)
     elseif i == "afternoon" then
-        return math.random(4, 6)
-    elseif math.random(1, 100) == 2 then
+        return math.random(5, 8)
+    elseif math.random(1, 1000) == 2 then
         current_time = os.clock()
         MONIKA_STATE = 3
-        return 15
+        return 21
     else
-        return math.random(10, 14)
+        return math.random(13, 20)
     end
 end
 
-local if_dark =  function (i,n)
+local if_dark = function(i, n)
     if getTime() == "night" then
         return i .. "_n" .. n
     else
@@ -130,6 +159,45 @@ local function imageGroup(root, pos)
     function t:setChild(src, pos)
         local img = t.widget:Image { src = src, x = pos.x, y = pos.y }
         return img
+    end
+
+    local function fileExists(name)
+        local f = io.open(name, "r")
+        if f ~= nil then
+            io.close(f)
+            return true
+        else
+            return false
+        end
+    end
+
+    local isS3 = fileExists('/font/MiSans-Demibold.ttf')
+
+    local TEXT_FONT = lvgl.BUILTIN_FONT.MONTSERRAT_14
+
+    function FontChange(font1, font2)
+        if DEBUG_ENABLE == false then
+            if isS3 then
+                TEXT_FONT = lvgl.Font('MiSans-' .. font2 .. '', 16)
+            else
+                TEXT_FONT = lvgl.Font('misansw_' .. font1 .. '', 16)
+            end
+        end
+    end
+
+    FontChange("demibold", "Demibold")
+
+    function t:setText(text, pos, color)
+        local stext = t.widget:Label { w = pos.w,
+            h = pos.h,
+            x = pos.x,
+            y = pos.y,
+            text = text,
+            text_color = color,
+            font_size = 16,
+            text_font = TEXT_FONT,
+        }
+        return stext
     end
 
     -- current state, center
@@ -230,7 +298,16 @@ local function createWatchface(parent)
 
     t.msg = imageGroup(wfRoot, { 0, 366 })
     t.msgBox = t.msg:setChild(imgPath("msg.bin"), { x = 1, y = 0 })
-    t.text = t.msg:setChild(imgPath("text1.bin"), { x = 12, y = 25 })
+
+    t.text9 = t.msg:setText("", { w = 170, h = 47, x = 12, y = 25 }, "#000000")
+    t.text8 = t.msg:setText("", { w = 170, h = 47, x = 12, y = 27 }, "#000000")
+    t.text7 = t.msg:setText("", { w = 170, h = 47, x = 14, y = 25 }, "#000000")
+    t.text6 = t.msg:setText("", { w = 170, h = 47, x = 14, y = 27 }, "#000000")
+    t.text5 = t.msg:setText("", { w = 170, h = 47, x = 13, y = 27 }, "#000000")
+    t.text4 = t.msg:setText("", { w = 170, h = 47, x = 13, y = 25 }, "#000000")
+    t.text3 = t.msg:setText("", { w = 170, h = 47, x = 12, y = 26 }, "#000000")
+    t.text2 = t.msg:setText("", { w = 170, h = 47, x = 14, y = 26 }, "#000000")
+    t.text = t.msg:setText("", { w = 170, h = 47, x = 13, y = 26 }, "#ffffff")
 
     wfRoot:onevent(lvgl.EVENT.SHORT_CLICKED, function(obj, code)
         local indev = lvgl.indev.get_act()
@@ -238,6 +315,15 @@ local function createWatchface(parent)
         if (y <= 225 and MONIKA_STATE ~= 3) then
             MONIKA_STATE = 2
             text = return_text()
+            current_time = os.clock()
+        end
+    end)
+
+    t.msg.widget:onevent(lvgl.EVENT.SHORT_CLICKED, function(obj, code)
+        local indev = lvgl.indev.get_act()
+        local x, y = indev:get_point()
+        if (MONIKA_STATE ~= 1) then
+            MONIKA_STATE = 1
             current_time = os.clock()
         end
     end)
@@ -278,14 +364,22 @@ local function uiCreate()
     dataman.subscribe("timeCentiSecond", watchface.monikaEye.widget, function(obj, value)
         target_time = os.clock()
         if MONIKA_STATE ~= 3 then
-            watchface.objImage:set({ src = imgPath(if_dark("bg",".bin")) })
+            watchface.objImage:set({ src = imgPath(if_dark("bg", ".bin")) })
         end
         if MONIKA_STATE == 2 then
             watchface.monikaEye.widget:add_flag(lvgl.FLAG.HIDDEN)
-            watchface.monikaEye.widget:set({ src = imgPath(if_dark("smile",".bin")) })
+            watchface.monikaEye.widget:set({ src = imgPath(if_dark("smile", ".bin")) })
             watchface.time.widget:set({ y = 267 })
             watchface.dateCont.widget:set({ y = 335 })
-            watchface.text:set({ src = imgPath("text" .. text .. ".bin") })
+            watchface.text:set({ text = totalText[text] })
+            watchface.text2:set({ text = totalText[text] })
+            watchface.text3:set({ text = totalText[text] })
+            watchface.text4:set({ text = totalText[text] })
+            watchface.text5:set({ text = totalText[text] })
+            watchface.text6:set({ text = totalText[text] })
+            watchface.text7:set({ text = totalText[text] })
+            watchface.text8:set({ text = totalText[text] })
+            watchface.text9:set({ text = totalText[text] })
             watchface.monikaEye.widget:clear_flag(lvgl.FLAG.HIDDEN)
             watchface.msg.widget:clear_flag(lvgl.FLAG.HIDDEN)
             if current_time + 3 <= target_time then
@@ -314,7 +408,7 @@ local function uiCreate()
             watchface.dateCont.widget:set({ y = 364 })
             watchface.msg.widget:add_flag(lvgl.FLAG.HIDDEN)
             if current_time + eye_time <= target_time then
-                watchface.monikaEye.widget:set({ src = imgPath(if_dark("eye_close",".bin")) })
+                watchface.monikaEye.widget:set({ src = imgPath(if_dark("eye_close", ".bin")) })
                 watchface.monikaEye.widget:clear_flag(lvgl.FLAG.HIDDEN)
                 if current_time + eye_time <= target_time - 0.4 then
                     watchface.monikaEye.widget:add_flag(lvgl.FLAG.HIDDEN)

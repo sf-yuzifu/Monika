@@ -171,7 +171,7 @@ local function imageGroup(root, pos)
         end
     end
 
-    local isS3 = fileExists('/font/MiSans-Demibold.ttf')
+    local isS3 = fileExists('/font/MiSans-Demibold.ttf') or fileExists('/system/font/MiSans-Demibold.ttf')
 
     local TEXT_FONT = lvgl.BUILTIN_FONT.MONTSERRAT_14
 
@@ -258,8 +258,8 @@ local function createWatchface(parent)
         bg_opa = 0,
         bg_color = 0,
         align = lvgl.ALIGN.CENTER,
-        w = 192,
-        h = 490,
+        w = 336,
+        h = 480,
     })
     wfRoot:clear_flag(lvgl.FLAG.SCROLLABLE)
     wfRoot:add_flag(lvgl.FLAG.EVENT_BUBBLE)
@@ -268,46 +268,46 @@ local function createWatchface(parent)
     t.objImage = lvgl.Image(wfRoot, { x = 0, y = 0, src = imgPath("bg.bin") })
 
     -- 电池电量
-    t.chargeCont = imageGroup(wfRoot, { 0, 461 })
-    t.chargeImg = t.chargeCont:setChild(imgPath("ap.bin"), { x = 78, y = 1 }) -- 充电图标
-    t.chargeContChild1 = t.chargeCont:setChild(imgPath("num8.bin"), { x = 78 });
-    t.chargeContChild2 = t.chargeCont:setChild(imgPath("num0.bin"), { x = 91 });
-    t.chargeContChild3 = t.chargeCont:setChild(imgPath("num%.bin"), { x = 103 });
-    t.chargeContChild4 = t.chargeCont:setChild(imgPath("num0.bin"), { x = 119 });
+    t.chargeCont = imageGroup(wfRoot, { 0, 453 })
+    t.chargeImg = t.chargeCont:setChild(imgPath("ap.bin"), { x = 126, y = 1 }) -- 充电图标
+    t.chargeContChild1 = t.chargeCont:setChild(imgPath("num1.bin"), { x = 149 });
+    t.chargeContChild2 = t.chargeCont:setChild(imgPath("num0.bin"), { x = 162 });
+    t.chargeContChild3 = t.chargeCont:setChild(imgPath("num0.bin"), { x = 174 });
+    t.chargeContChild4 = t.chargeCont:setChild(imgPath("num%.bin"), { x = 190 });
 
     -- 小时分钟
-    t.time = imageGroup(wfRoot, { 0, 294 })
-    t.timeHourHigh = t.time:setChild(imgPath("0.bin"), { x = -7 })
-    t.timeHourLow = t.time:setChild(imgPath("0.bin"), { x = 33 })
-    t.timeGang = t.time:setChild(imgPath("num_mao.bin"), { x = 69, y = -3 })
-    t.timeMinuteHigh = t.time:setChild(imgPath("0.bin"), { x = 105 })
-    t.timeMinuteLow = t.time:setChild(imgPath("0.bin"), { x = 145 })
+    t.time = imageGroup(wfRoot, { 0, 297 })
+    t.timeHourHigh = t.time:setChild(imgPath("0.bin"), { x = 43 })
+    t.timeHourLow = t.time:setChild(imgPath("0.bin"), { x = 97 })
+    t.timeGang = t.time:setChild(imgPath("num_mao.bin"), { x = 141, y = -3 })
+    t.timeMinuteHigh = t.time:setChild(imgPath("0.bin"), { x = 185 })
+    t.timeMinuteLow = t.time:setChild(imgPath("0.bin"), { x = 239 })
 
     -- 日期
-    t.dateCont = imageGroup(wfRoot, { 0, 364 })
-    t.dateContChild1 = t.dateCont:setChild(imgPath("num0.bin"), { x = 37 });
-    t.dateContChild2 = t.dateCont:setChild(imgPath("num8.bin"), { x = 49 });
-    t.dateContChild3 = t.dateCont:setChild(imgPath("num_gang.bin"), { x = 59 });
-    t.dateContChild4 = t.dateCont:setChild(imgPath("num1.bin"), { x = 69 });
-    t.dateContChild5 = t.dateCont:setChild(imgPath("num6.bin"), { x = 80 });
+    t.dateCont = imageGroup(wfRoot, { 0, 365 })
+    t.dateContChild1 = t.dateCont:setChild(imgPath("num0.bin"), { x = 93 });
+    t.dateContChild2 = t.dateCont:setChild(imgPath("num8.bin"), { x = 105 });
+    t.dateContChild3 = t.dateCont:setChild(imgPath("num_gang.bin"), { x = 115 });
+    t.dateContChild4 = t.dateCont:setChild(imgPath("num1.bin"), { x = 125 });
+    t.dateContChild5 = t.dateCont:setChild(imgPath("num6.bin"), { x = 136 });
 
     -- 星期
-    t.dateWeek = t.dateCont:setChild(imgPath("mon.bin"), { x = 105, y = 2 })
+    t.dateWeek = t.dateCont:setChild(imgPath("mon.bin"), { x = 188, y = 2 })
 
-    t.monikaEye = Image(wfRoot, imgPath("eye_close.bin"), { 0, 104 })
+    t.monikaEye = Image(wfRoot, imgPath("eye_close.bin"), { 0, 92 })
 
-    t.msg = imageGroup(wfRoot, { 0, 366 })
-    t.msgBox = t.msg:setChild(imgPath("msg.bin"), { x = 1, y = 0 })
+    t.msg = imageGroup(wfRoot, { 0, 345 })
+    t.msgBox = t.msg:setChild(imgPath("msg.bin"), { x = 18, y = 0 })
 
-    t.text9 = t.msg:setText("", { w = 170, h = 47, x = 12, y = 25 }, "#000000")
-    t.text8 = t.msg:setText("", { w = 170, h = 47, x = 12, y = 27 }, "#000000")
-    t.text7 = t.msg:setText("", { w = 170, h = 47, x = 14, y = 25 }, "#000000")
-    t.text6 = t.msg:setText("", { w = 170, h = 47, x = 14, y = 27 }, "#000000")
-    t.text5 = t.msg:setText("", { w = 170, h = 47, x = 13, y = 27 }, "#000000")
-    t.text4 = t.msg:setText("", { w = 170, h = 47, x = 13, y = 25 }, "#000000")
-    t.text3 = t.msg:setText("", { w = 170, h = 47, x = 12, y = 26 }, "#000000")
-    t.text2 = t.msg:setText("", { w = 170, h = 47, x = 14, y = 26 }, "#000000")
-    t.text = t.msg:setText("", { w = 170, h = 47, x = 13, y = 26 }, "#ffffff")
+    t.text9 = t.msg:setText("", { w = 280, h = 47, x = 12, y = 25 }, "#000000")
+    t.text8 = t.msg:setText("", { w = 280, h = 47, x = 12, y = 27 }, "#000000")
+    t.text7 = t.msg:setText("", { w = 280, h = 47, x = 14, y = 25 }, "#000000")
+    t.text6 = t.msg:setText("", { w = 280, h = 47, x = 14, y = 27 }, "#000000")
+    t.text5 = t.msg:setText("", { w = 280, h = 47, x = 13, y = 27 }, "#000000")
+    t.text4 = t.msg:setText("", { w = 280, h = 47, x = 13, y = 25 }, "#000000")
+    t.text3 = t.msg:setText("", { w = 280, h = 47, x = 12, y = 26 }, "#000000")
+    t.text2 = t.msg:setText("", { w = 280, h = 47, x = 14, y = 26 }, "#000000")
+    t.text = t.msg:setText("", { w = 280, h = 47, x = 13, y = 26 }, "#ffffff")
 
     wfRoot:onevent(lvgl.EVENT.SHORT_CLICKED, function(obj, code)
         local indev = lvgl.indev.get_act()
@@ -369,8 +369,8 @@ local function uiCreate()
         if MONIKA_STATE == 2 then
             watchface.monikaEye.widget:add_flag(lvgl.FLAG.HIDDEN)
             watchface.monikaEye.widget:set({ src = imgPath(if_dark("smile", ".bin")) })
-            watchface.time.widget:set({ y = 267 })
-            watchface.dateCont.widget:set({ y = 335 })
+            watchface.time.widget:set({ y = 245 })
+            watchface.dateCont.widget:set({ y = 313 })
             watchface.text:set({ text = totalText[text] })
             watchface.text2:set({ text = totalText[text] })
             watchface.text3:set({ text = totalText[text] })
@@ -404,8 +404,8 @@ local function uiCreate()
                 current_time = os.clock()
             end
         else
-            watchface.time.widget:set({ y = 294 })
-            watchface.dateCont.widget:set({ y = 364 })
+            watchface.time.widget:set({ y = 297 })
+            watchface.dateCont.widget:set({ y = 365 })
             watchface.msg.widget:add_flag(lvgl.FLAG.HIDDEN)
             if current_time + eye_time <= target_time then
                 watchface.monikaEye.widget:set({ src = imgPath(if_dark("eye_close", ".bin")) })
@@ -432,34 +432,34 @@ local function uiCreate()
         local s = 1
         if index < 10 then
             src = string.format("num%d.bin", index)
-            watchface.chargeImg:set({ x = 67 })
-            watchface.chargeContChild1:set({ src = imgPath(src), x = 91 })
+            watchface.chargeImg:set({ x = 138 })
+            watchface.chargeContChild1:set({ src = imgPath(src), x = 162 })
             watchface.chargeContChild1:clear_flag(lvgl.FLAG.HIDDEN)
-            watchface.chargeContChild2:set({ src = imgPath("num%.bin"), x = 107 })
+            watchface.chargeContChild2:set({ src = imgPath("num%.bin"), x = 178 })
             watchface.chargeContChild2:clear_flag(lvgl.FLAG.HIDDEN)
         elseif index < 100 then
-            watchface.chargeImg:set({ x = 61 })
+            watchface.chargeImg:set({ x = 133 })
             src = string.format("num%d.bin", index // 10)
-            watchface.chargeContChild1:set({ src = imgPath(src), x = 85 })
+            watchface.chargeContChild1:set({ src = imgPath(src), x = 159 })
             watchface.chargeContChild1:clear_flag(lvgl.FLAG.HIDDEN)
             src = string.format("num%d.bin", index % 10)
-            watchface.chargeContChild2:set({ src = imgPath(src), x = 97 })
+            watchface.chargeContChild2:set({ src = imgPath(src), x = 171 })
             watchface.chargeContChild2:clear_flag(lvgl.FLAG.HIDDEN)
-            watchface.chargeContChild3:set({ src = imgPath("num%.bin"), x = 113 })
+            watchface.chargeContChild3:set({ src = imgPath("num%.bin"), x = 187 })
             watchface.chargeContChild3:clear_flag(lvgl.FLAG.HIDDEN)
             s = 2
         else
-            watchface.chargeImg:set({ x = 55 })
+            watchface.chargeImg:set({ x = 126 })
             src = string.format("num%d.bin", 1)
-            watchface.chargeContChild1:set({ src = imgPath(src), x = 78 })
+            watchface.chargeContChild1:set({ src = imgPath(src), x = 149 })
             watchface.chargeContChild1:clear_flag(lvgl.FLAG.HIDDEN)
             src = string.format("num%d.bin", 0)
-            watchface.chargeContChild2:set({ src = imgPath(src), x = 91 })
+            watchface.chargeContChild2:set({ src = imgPath(src), x = 163 })
             watchface.chargeContChild2:clear_flag(lvgl.FLAG.HIDDEN)
             src = string.format("num%d.bin", 0)
-            watchface.chargeContChild3:set({ src = imgPath(src), x = 103 })
+            watchface.chargeContChild3:set({ src = imgPath(src), x = 174 })
             watchface.chargeContChild3:clear_flag(lvgl.FLAG.HIDDEN)
-            watchface.chargeContChild4:set({ src = imgPath("num%.bin"), x = 119 })
+            watchface.chargeContChild4:set({ src = imgPath("num%.bin"), x = 190 })
             watchface.chargeContChild4:clear_flag(lvgl.FLAG.HIDDEN)
             s = 3
         end

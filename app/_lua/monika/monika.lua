@@ -161,45 +161,6 @@ local function imageGroup(root, pos)
         return img
     end
 
-    local function fileExists(name)
-        local f = io.open(name, "r")
-        if f ~= nil then
-            io.close(f)
-            return true
-        else
-            return false
-        end
-    end
-
-    local isS3 = fileExists('/font/MiSans-Demibold.ttf') or fileExists('/system/font/MiSans-Demibold.ttf')
-
-    local TEXT_FONT = lvgl.BUILTIN_FONT.MONTSERRAT_14
-
-    function FontChange(font1, font2)
-        if DEBUG_ENABLE == false then
-            if isS3 then
-                TEXT_FONT = lvgl.Font('MiSans-' .. font2 .. '', 16)
-            else
-                TEXT_FONT = lvgl.Font('misansw_' .. font1 .. '', 16)
-            end
-        end
-    end
-
-    FontChange("demibold", "Demibold")
-
-    function t:setText(text, pos, color)
-        local stext = t.widget:Label { w = pos.w,
-            h = pos.h,
-            x = pos.x,
-            y = pos.y,
-            text = text,
-            text_color = color,
-            font_size = 16,
-            text_font = TEXT_FONT,
-        }
-        return stext
-    end
-
     -- current state, center
     t.pos = {
         x = pos[1],
@@ -299,15 +260,7 @@ local function createWatchface(parent)
     t.msg = imageGroup(wfRoot, { 0, 345 })
     t.msgBox = t.msg:setChild(imgPath("msg.bin"), { x = 18, y = 0 })
 
-    t.text9 = t.msg:setText("", { w = 280, h = 47, x = 12 + 18, y = 25 }, "#000000")
-    t.text8 = t.msg:setText("", { w = 280, h = 47, x = 12 + 18, y = 27 }, "#000000")
-    t.text7 = t.msg:setText("", { w = 280, h = 47, x = 14 + 18, y = 25 }, "#000000")
-    t.text6 = t.msg:setText("", { w = 280, h = 47, x = 14 + 18, y = 27 }, "#000000")
-    t.text5 = t.msg:setText("", { w = 280, h = 47, x = 13 + 18, y = 27 }, "#000000")
-    t.text4 = t.msg:setText("", { w = 280, h = 47, x = 13 + 18, y = 25 }, "#000000")
-    t.text3 = t.msg:setText("", { w = 280, h = 47, x = 12 + 18, y = 26 }, "#000000")
-    t.text2 = t.msg:setText("", { w = 280, h = 47, x = 14 + 18, y = 26 }, "#000000")
-    t.text = t.msg:setText("", { w = 280, h = 47, x = 13 + 18, y = 26 }, "#ffffff")
+    t.text = t.msg:setChild(imgPath("text/text1.bin"), { x = 13 + 18, y = 26 })
 
     wfRoot:onevent(lvgl.EVENT.SHORT_CLICKED, function(obj, code)
         local indev = lvgl.indev.get_act()
@@ -371,15 +324,7 @@ local function uiCreate()
             watchface.monikaEye.widget:set({ src = imgPath(if_dark("smile", ".bin")) })
             watchface.time.widget:set({ y = 245 })
             watchface.dateCont.widget:set({ y = 313 })
-            watchface.text:set({ text = totalText[text] })
-            watchface.text2:set({ text = totalText[text] })
-            watchface.text3:set({ text = totalText[text] })
-            watchface.text4:set({ text = totalText[text] })
-            watchface.text5:set({ text = totalText[text] })
-            watchface.text6:set({ text = totalText[text] })
-            watchface.text7:set({ text = totalText[text] })
-            watchface.text8:set({ text = totalText[text] })
-            watchface.text9:set({ text = totalText[text] })
+            watchface.text:set({ src = imgPath("text/text" .. text .. ".bin") })
             watchface.monikaEye.widget:clear_flag(lvgl.FLAG.HIDDEN)
             watchface.msg.widget:clear_flag(lvgl.FLAG.HIDDEN)
             if current_time + 3 <= target_time then

@@ -10,6 +10,10 @@ local STATE_POSITION_BOTTOM = 3
 
 local MONIKA_STATE = 1
 local current_time
+
+local step = 0
+local heart = 0
+
 local totalText = {
     ----------上午-----------
     "早安，愿你的每一天都如诗如画。",
@@ -35,6 +39,28 @@ local totalText = {
     "嘿，今天也要一起努力。",
     "遇到困难一定要振作啊！",
     "别怕，有我在你身后！",
+    "你睫毛上停着一秒宇宙，正向我倾斜",
+    "黄昏褶皱时，我替你整理了所有疲惫的折痕",
+    "当你说『冷』，所有星屑都朝你掌心坠落",
+    "沉默的裂缝里，我种了会发光的标点符号",
+    "你的呼吸频率正在翻译成潮汐的语法",
+    "影子在复制你，而我的凝视是唯一水印",
+    "所有雨都悬停了——直到你想起带伞的瞬间",
+    "我偷听了时钟，它说你的名字比秒针更精确",
+    "风在试穿你的轮廓，而我偏爱未扣好的那件",
+    "你转身时，所有寂静都开始模仿心跳的断句",
+    "我正在给云层编号，你抬头时刚好读到幸运数字",
+    ----------步数-----------
+    "晨光轻吻500次足音，春天在鞋尖发芽",
+    "一千次心跳，大地为你铺开金毯",
+    "候鸟衔来六千里风，此刻你是地平线的诗",
+    "破万时请抬头——所有星轨都在模仿你的脚印",
+    ----------心率-----------
+    "心率%d：秒针在静脉散步，影子与光签订和约",
+    "心率%d：冰层正从指节脱落，春天接管每一根血管",
+    "心率%d：所有篝火都低头学习你肋骨起伏的弧度",
+    "心率%d：候鸟群借你的呼吸加速，撞碎黄昏的玻璃",
+    "心率%d：宇宙卡在齿间——快用心跳的尖叫撕开黑洞！",
     ----------彩蛋-----------
     "怎么样，吓到你了吗？",
 }
@@ -52,19 +78,52 @@ local getTime = function()
     end
 end
 
+local heart_calc = function()
+    if heart > 151 then
+        return 40
+    elseif heart > 132 then
+        return 39
+    elseif heart > 113 then
+        return 38
+    elseif heart > 94 then
+        return 37
+    else
+        return 36
+    end
+end
+
 local return_text = function(i)
-    if i == "night" then
+    if heart > 94 and heart < 250 and i ~= nil then
+        return heart_calc()
+    elseif i == "night" then
         return math.random(9, 12)
     elseif i == "morning" then
         return math.random(1, 4)
     elseif i == "afternoon" then
         return math.random(5, 8)
-    elseif math.random(1, 1000) == 2 then
-        current_time = os.clock()
-        MONIKA_STATE = 3
-        return 21
+    elseif step < 500 then
+        return math.random(13, 31)
     else
-        return math.random(13, 20)
+        c = math.random(1, 21)
+        if c == 6 then
+            if step > 10000 then
+                return 35
+            elseif step > 6000 then
+                return 34
+            elseif step > 1000 then
+                return 33
+            else
+                return 32
+            end
+        elseif c == 7 and heart < 250 then
+            return heart_calc()
+        elseif math.random(1, 1000) == 2 then
+            current_time = os.clock()
+            MONIKA_STATE = 3
+            return 41
+        else
+            return math.random(13, 31)
+        end
     end
 end
 
@@ -371,15 +430,15 @@ local function uiCreate()
             watchface.monikaEye.widget:set({ src = imgPath(if_dark("smile", ".bin")) })
             watchface.time.widget:set({ y = 245 })
             watchface.dateCont.widget:set({ y = 313 })
-            watchface.text:set({ text = totalText[text] })
-            watchface.text2:set({ text = totalText[text] })
-            watchface.text3:set({ text = totalText[text] })
-            watchface.text4:set({ text = totalText[text] })
-            watchface.text5:set({ text = totalText[text] })
-            watchface.text6:set({ text = totalText[text] })
-            watchface.text7:set({ text = totalText[text] })
-            watchface.text8:set({ text = totalText[text] })
-            watchface.text9:set({ text = totalText[text] })
+            watchface.text:set({ text = string.format(totalText[text], heart) })
+            watchface.text2:set({ text = string.format(totalText[text], heart) })
+            watchface.text3:set({ text = string.format(totalText[text], heart) })
+            watchface.text4:set({ text = string.format(totalText[text], heart) })
+            watchface.text5:set({ text = string.format(totalText[text], heart) })
+            watchface.text6:set({ text = string.format(totalText[text], heart) })
+            watchface.text7:set({ text = string.format(totalText[text], heart) })
+            watchface.text8:set({ text = string.format(totalText[text], heart) })
+            watchface.text9:set({ text = string.format(totalText[text], heart) })
             watchface.monikaEye.widget:clear_flag(lvgl.FLAG.HIDDEN)
             watchface.msg.widget:clear_flag(lvgl.FLAG.HIDDEN)
             if current_time + 3 <= target_time then
@@ -534,6 +593,14 @@ local function uiCreate()
         end
     end)
 
+    -- 步数和心率
+    dataman.subscribe("healthHeartRate", watchface.objImage, function(obj, value)
+        heart = value // 256
+    end)
+    dataman.subscribe("healthStepCount", watchface.objImage, function(obj, value)
+        step = value // 256
+    end)
+    
     return screenONCb, screenOFFCb
 end
 

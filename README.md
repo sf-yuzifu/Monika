@@ -15,6 +15,7 @@
 ## 效果预览
 
 <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;"> <img src="images/preview.png" alt="表盘预览" style="height: 200px; object-fit: contain;"> <img src="images/1.png" alt="功能展示1" style="height: 200px; object-fit: contain;"> <img src="images/2.png" alt="功能展示2" style="height: 200px; object-fit: contain;"> </div>
+
 ## 快速开始
 
 ### 环境要求

@@ -1,0 +1,53 @@
+{
+  "item": {
+    "id": "979825266001",
+    "restype": "watchface",
+    "name": "【可互动】心跳文学部 莫妮卡",
+    "description": "将心跳文学部的莫妮卡带到小米手环上陪伴你吧！",
+    "preview": [
+      "preview.png",
+      "pic/band9.png",
+      "pic/band10.png",
+      "pic/band9pro.png"
+    ],
+    "icon": "icon.png",
+    "cover": "preview.png",
+    "author": [
+      {
+        "name": "小鱼yuzifu",
+        "bindABAccount": true
+      }
+    ]
+  },
+  "links": [
+    {
+      "icon": "github-logo",
+      "title": "GitHub",
+      "url": "https://github.com/sf-yuzifu/Monika"
+    },
+    {
+      "icon": "house-line",
+      "title": "个人主页",
+      "url": "https://yzf.moe"
+    }
+  ],
+  "downloads": {
+    "xmb9": {
+      "version": "1.1",
+      "file_name": "monika_band9.bin"
+    },
+    "xmb9p": {
+      "version": "1.1",
+      "file_name": "monika_band9pro.bin"
+    },
+    "xmb10": {
+      "version": "1.1",
+      "file_name": "monika_band10.bin"
+    },
+    "xmb10nfc": {
+      "version": "1.1",
+      "file_name": "monika_band10.bin"
+    }
+  },
+  "ext": {}
+}

@@ -1,4 +1,4 @@
--- A small timer drives state transitions; rendering happens only when state changes.
+-- Schedule the next animation deadline instead of polling every 100ms.
 local function uiCreate()
     local root = lvgl.Object(nil, {
         w = lvgl.HOR_RES(), h = lvgl.VER_RES(), bg_color = 0,
@@ -11,6 +11,19 @@ local function uiCreate()
     local lastState, lastText, lastNight, lastBlink, lastHeart
     local active = true
     local eyeTime = math.random(7000, 10000)
+    local night = getTime() == "night"
+    local themeDeadline = animationTime + 60000
+    local timer, scheduledDelay, scheduledAt
+    local function syncExternalTime()
+        if active and scheduledAt then
+            -- os.time is available on devices, but only has second precision.
+            local elapsed = math.max(0, math.min(scheduledDelay, (os.time() - scheduledAt) * 1000))
+            animationTime = animationTime + elapsed
+            scheduledDelay = scheduledDelay - elapsed
+            scheduledAt = os.time()
+        end
+    end
+    syncAnimationTime = syncExternalTime
     local function render()
         local heartValue = validHeart()
         local heartDialogue = not DEVICE.imageText and text >= 36 and text <= 40
@@ -34,7 +47,10 @@ local function uiCreate()
             elapsed = 0
             eyeTime = math.random(7000, 10000)
         end
-        local night = getTime() == "night"
+        if animationTime >= themeDeadline then
+            night = getTime() == "night"
+            themeDeadline = animationTime + 60000
+        end
         local blink = MONIKA_STATE == 1 and elapsed >= eyeTime
         if lastState == MONIKA_STATE and lastText == text and lastNight == night and lastBlink == blink
             and (not heartDialogue or lastHeart == heartValue) then return end
@@ -64,6 +80,23 @@ local function uiCreate()
         lastState, lastText, lastNight, lastBlink = MONIKA_STATE, text, night, blink
         lastHeart = heartValue
     end
+    local function schedule()
+        if not timer or not active then return end
+        local elapsed = animationTime - current_time
+        local duration
+        if MONIKA_STATE == 3 then duration = 1000
+        elseif MONIKA_STATE == 2 then duration = dialogueDuration(text)
+        else duration = elapsed < eyeTime and eyeTime or eyeTime + 400 end
+        scheduledDelay = math.max(1, math.min(duration - elapsed, themeDeadline - animationTime))
+        scheduledAt = os.time()
+        timer:set { period = scheduledDelay }
+        timer:resume()
+    end
+    refreshUI = function()
+        if not active then return end
+        render()
+        schedule()
+    end
     -- Reject invalid or out-of-range encoded sensor values before touching resources.
     local rawDataman = dataman
     local limits = {
@@ -79,6 +112,8 @@ local function uiCreate()
                 if type(encoded) ~= "number" or encoded ~= encoded or encoded == 2147483647
                     or encoded < 256 or encoded // 256 > limits.healthHeartRate then
                     heart, heartUpdatedAt = nil, nil
+                    syncExternalTime()
+                    refreshUI()
                     return
                 end
             end
@@ -87,6 +122,10 @@ local function uiCreate()
             if value > (limits[key] or 2147483646) then return end
             if (key == "dateMonth" or key == "dateDay" or key == "healthHeartRate") and value == 0 then return end
             callback(widget, encoded)
+            if key == "healthHeartRate" then
+                syncExternalTime()
+                refreshUI()
+            end
         end)
     end
     dataman.subscribe("systemStatusBattery", watchface.chargeCont.widget, function(obj, value)
@@ -99,23 +138,25 @@ local function uiCreate()
         MONIKA_STATE = 2
         current_time = animationTime
         lastState = nil
+        night = getTime() == "night"
+        themeDeadline = animationTime + 60000
         render()
+        schedule()
     end
-    on()
-    local timer = lvgl.Timer {
-        period = 100, repeat_count = -1,
+    timer = lvgl.Timer {
+        period = 1000, repeat_count = -1,
         cb = function()
             if active then
-                animationTime = animationTime + 100
+                animationTime = animationTime + scheduledDelay
                 render()
+                schedule()
             end
         end,
     }
-    timer:resume()
+    on()
     function ScreenStateChangedCB(previous, current, reason)
         if current == "ON" and previous ~= "ON" then
             on()
-            timer:resume()
         elseif current ~= "ON" then
             active = false
             timer:pause()

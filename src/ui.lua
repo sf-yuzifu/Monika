@@ -64,15 +64,19 @@ local function createWatchface(parent)
         local indev = lvgl.indev.get_act()
         local x, y = indev:get_point()
         if y <= DEVICE.touchMaxY and MONIKA_STATE ~= 3 then
+            syncAnimationTime()
             MONIKA_STATE = 2
             text = return_text()
             current_time = animationTime
+            refreshUI()
         end
     end)
     t.msg.widget:onevent(lvgl.EVENT.SHORT_CLICKED, function()
         if MONIKA_STATE ~= 1 then
+            syncAnimationTime()
             MONIKA_STATE = 1
             current_time = animationTime
+            refreshUI()
         end
     end)
     return t

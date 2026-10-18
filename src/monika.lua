@@ -22,6 +22,8 @@ end
 local function imgPath(name) return fsRoot .. (PNG_ASSETS[name] or name) end
 local cachedFont
 local propertyCache = {}
+local refreshUI = function() end
+local syncAnimationTime = function() end
 local function textFont()
     if cachedFont then return cachedFont end
     for _, name in ipairs(DEVICE.fonts) do

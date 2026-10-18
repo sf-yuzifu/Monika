@@ -47,7 +47,11 @@ lvgl = {
     indev={get_act=function() return {get_point=function() return 100,100 end} end},
 }
 function lvgl.Timer(values)
-    function values:resume() self.paused=false end
+    function values:set(opts)
+        for k,v in pairs(opts) do self[k]=v end
+        self.due=now+self.period
+    end
+    function values:resume() self.paused=false; self.due=now+self.period end
     function values:pause() self.paused=true end
     timers[#timers+1]=values
     return values
@@ -61,12 +65,19 @@ function emit(key,value)
     if sub then sub.cb(sub.obj,value) end
 end
 function advance(ms)
-    now = now + ms
-    for _,timer in ipairs(timers) do
-        if not timer.paused then
-            for i=1,ms // timer.period do timer.cb() end
+    local target=now+ms
+    while true do
+        local nextTimer
+        for _,timer in ipairs(timers) do
+            if not timer.paused and timer.due <= target and (not nextTimer or timer.due < nextTimer.due) then nextTimer=timer end
         end
+        if not nextTimer then break end
+        now=nextTimer.due
+        nextTimer.due=now+nextTimer.period
+        timerCallbacks=(timerCallbacks or 0)+1
+        nextTimer.cb()
     end
+    now=target
 end
 function click(i) clicks[i].cb(clicks[i].obj,1) end
 function check(condition,message) assert(condition,message) end
@@ -205,6 +216,28 @@ def main():
                 check(previous ~= dialogue(), "consecutive ordinary dialogue does not repeat")
             end
             math.random, os.date = random, date
+        ''')
+        runtime.execute('''
+            local date = os.date
+            local hour = "8"
+            os.date = function() return hour end
+            ScreenStateChangedCB("ON","OFF","test")
+            ScreenStateChangedCB("OFF","ON","test")
+            advance(8100)
+            timerCallbacks = 0
+            advance(60000)
+            check(timerCallbacks < 30, "idle minute uses event deadlines, not 600 polling callbacks")
+            hour = "20"
+            advance(60000)
+            check(clicks[1].obj.children[1].src:find("bg_n"), "continuous screen updates night theme")
+            ScreenStateChangedCB("ON","OFF","test")
+            local callbacks = timerCallbacks
+            advance(60000)
+            check(timerCallbacks == callbacks, "screen off has no timer callbacks")
+            hour = "8"
+            ScreenStateChangedCB("OFF","ON","test")
+            check(not clicks[1].obj.children[1].src:find("bg_n"), "screen on refreshes theme immediately")
+            os.date = date
         ''')
         if not config["imageText"]:
             runtime.execute('''

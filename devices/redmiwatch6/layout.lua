@@ -8,8 +8,8 @@ local function createWatchface(parent)
         bg_opa = 0,
         bg_color = 0,
         align = lvgl.ALIGN.CENTER,
-        w = 432,
-        h = 514,
+        w = DEVICE.width,
+        h = DEVICE.height,
     })
     wfRoot:clear_flag(lvgl.FLAG.SCROLLABLE)
     wfRoot:add_flag(lvgl.FLAG.EVENT_BUBBLE)
@@ -62,10 +62,10 @@ local function createWatchface(parent)
     wfRoot:onevent(lvgl.EVENT.SHORT_CLICKED, function(obj, code)
         local indev = lvgl.indev.get_act()
         local x, y = indev:get_point()
-        if (y <= 225 and MONIKA_STATE ~= 3) then
+        if (y <= DEVICE.touchMaxY and MONIKA_STATE ~= 3) then
             MONIKA_STATE = 2
             text = return_text()
-            current_time = os.clock()
+            current_time = lvgl.tick_get()
         end
     end)
 
@@ -74,7 +74,7 @@ local function createWatchface(parent)
         local x, y = indev:get_point()
         if (MONIKA_STATE ~= 1) then
             MONIKA_STATE = 1
-            current_time = os.clock()
+            current_time = lvgl.tick_get()
         end
     end)
 
@@ -89,9 +89,8 @@ local function updateBattery(watchface, obj, value)
         watchface.chargeContChild3:add_flag(lvgl.FLAG.HIDDEN)
         watchface.chargeContChild4:add_flag(lvgl.FLAG.HIDDEN)
 
-        local s = 1
         if index < 10 then
-            src = string.format("num%d.bin", index)
+            local src = string.format("num%d.bin", index)
             watchface.chargeImg:set({ x = 172 })
             watchface.chargeContChild1:set({ src = imgPath(src), x = 202 })
             watchface.chargeContChild1:clear_flag(lvgl.FLAG.HIDDEN)
@@ -99,28 +98,28 @@ local function updateBattery(watchface, obj, value)
             watchface.chargeContChild2:clear_flag(lvgl.FLAG.HIDDEN)
         elseif index < 100 then
             watchface.chargeImg:set({ x = 162 })
-            src = string.format("num%d.bin", index // 10)
+            local src = string.format("num%d.bin", index // 10)
             watchface.chargeContChild1:set({ src = imgPath(src), x = 192 })
             watchface.chargeContChild1:clear_flag(lvgl.FLAG.HIDDEN)
-            src = string.format("num%d.bin", index % 10)
+            local src = string.format("num%d.bin", index % 10)
             watchface.chargeContChild2:set({ src = imgPath(src), x = 213 })
             watchface.chargeContChild2:clear_flag(lvgl.FLAG.HIDDEN)
             watchface.chargeContChild3:set({ src = imgPath("num%.bin"), x = 235 })
             watchface.chargeContChild3:clear_flag(lvgl.FLAG.HIDDEN)
-            s = 2
+
         else
             watchface.chargeImg:set({ x = 151 })
-            src = string.format("num%d.bin", 1)
+            local src = string.format("num%d.bin", 1)
             watchface.chargeContChild1:set({ src = imgPath(src), x = 181 })
             watchface.chargeContChild1:clear_flag(lvgl.FLAG.HIDDEN)
-            src = string.format("num%d.bin", 0)
+            local src = string.format("num%d.bin", 0)
             watchface.chargeContChild2:set({ src = imgPath(src), x = 203 })
             watchface.chargeContChild2:clear_flag(lvgl.FLAG.HIDDEN)
-            src = string.format("num%d.bin", 0)
+            local src = string.format("num%d.bin", 0)
             watchface.chargeContChild3:set({ src = imgPath(src), x = 224 })
             watchface.chargeContChild3:clear_flag(lvgl.FLAG.HIDDEN)
             watchface.chargeContChild4:set({ src = imgPath("num%.bin"), x = 246 })
             watchface.chargeContChild4:clear_flag(lvgl.FLAG.HIDDEN)
-            s = 3
+
         end
     end

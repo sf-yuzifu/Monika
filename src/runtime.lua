@@ -82,7 +82,7 @@ local function uiCreate()
     dataman.subscribe("systemStatusBattery", watchface.chargeCont.widget, function(obj, value)
         updateBattery(watchface, obj, value)
     end)
-    -- BUILD_SUBSCRIPTIONS
+    subscribeData(dataman, watchface)
     local function on()
         active = true
         text = return_text(getTime())

@@ -1,11 +1,11 @@
 local lvgl = require("lvgl")
 local dataman = require("dataman")
 local fsRoot = SCRIPT_PATH
-local STATE_POSITION_MID = 2
 local MONIKA_STATE = 1
 local current_time = lvgl.tick_get()
 local step, heart = 0, 0
-local function imgPath(name) return fsRoot .. name end
+-- DEVICE and PNG_ASSETS are embedded by tools/build.py.
+local function imgPath(name) return fsRoot .. (PNG_ASSETS[name] or name) end
 local cachedFont
 local function textFont()
     if cachedFont then return cachedFont end
@@ -137,60 +137,8 @@ local return_text = function(i)
     end
 end
 
--- Create an image to support state amim etc.
----@param root Object
----@return Image
 local function Image(root, src, pos)
-    --- @class Image
-    local t = {} -- create new table
-
-    t.widget = root:Image { src = src }
-    local w, h = t.widget:get_img_size()
-    t.w = w
-    t.h = h
-
-    -- current state, center
-    t.pos = {
-        x = pos[1],
-        y = pos[2]
-    }
-
-    function t:getImageWidth()
-        return t.w
-    end
-
-    function t:getImageheight()
-        return t.h
-    end
-
-    t.defaultY = pos[2]
-    t.lastState = STATE_POSITION_MID
-    t.state = STATE_POSITION_MID
-
-    t.widget:set {
-        w = w,
-        h = h,
-        x = t.pos.x,
-        y = t.pos.y
-    }
-
-    -- create animation and put it on hold
-    local anim = t.widget:Anim {
-        run = false,
-        start_value = 0,
-        end_value = 1000,
-        time = 560, -- 560ms fixed
-        repeat_count = 1,
-        path = "ease_in_out",
-        exec_cb = function(obj, now)
-            obj:set { y = now }
-            t.pos.y = now
-        end
-    }
-
-    t.posAnim = anim
-
-    return t
+    return { widget = root:Image { src = src, x = pos[1], y = pos[2] } }
 end
 
 ---@param root Object
@@ -206,8 +154,8 @@ local function imageGroup(root, pos)
         bg_color = 0,
         w = lvgl.SIZE_CONTENT,
         h = lvgl.SIZE_CONTENT,
-        x = pos.x,
-        y = pos.y,
+        x = pos[1],
+        y = pos[2],
     })
 
     function t:setChild(src, pos)
@@ -227,49 +175,6 @@ local function imageGroup(root, pos)
         }
         return stext
     end
-
-    -- current state, center
-    t.pos = {
-        x = pos[1],
-        y = pos[2]
-    }
-
-    t.defaultY = pos[2]
-    t.lastState = STATE_POSITION_MID
-    t.state = STATE_POSITION_MID
-
-    t.widget:set {
-        x = t.pos.x,
-        y = t.pos.y
-    }
-
-    function t:getChildCnt()
-        return t.widget:get_child_cnt()
-    end
-
-    function t:getChild(i)
-        return t.widget:get_child(i)
-    end
-
-    function t:getParent()
-        return t.widget:get_parent()
-    end
-
-    -- create animation and put it on hold
-    local anim = t.widget:Anim {
-        run = false,
-        start_value = 0,
-        end_value = 1000,
-        time = 560, -- 560ms fixed
-        repeat_count = 1,
-        path = "ease_in_out",
-        exec_cb = function(obj, now)
-            obj:set { y = now }
-            t.pos.y = now
-        end
-    }
-
-    t.posAnim = anim
 
     return t
 end

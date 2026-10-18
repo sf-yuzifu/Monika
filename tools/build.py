@@ -24,37 +24,24 @@ def lua(value):
 
 
 def source_for(config):
-    common = (ROOT / "src/common.lua").read_text(encoding="utf-8")
+    common = (ROOT / "src/monika.lua").read_text(encoding="utf-8")
     layout = (ROOT / "devices" / config["assets"] / "layout.lua").read_text(encoding="utf-8")
-    layout = layout.replace("os.clock()", "lvgl.tick_get()")
-    layout = layout.replace(f"w = {config['width']},", "w = DEVICE.width,", 1)
-    layout = layout.replace(f"h = {config['height']},", "h = DEVICE.height,", 1)
-    # Keep callbacks from old releases local to their invocation.
-    layout = layout.replace('            src = ', '            local src = ')
-    layout = layout.replace('if (y <= 225', 'if (y <= DEVICE.touchMaxY')
     subscriptions = (ROOT / "src/subscriptions.lua").read_text(encoding="utf-8")
-    if config["imageText"]:
-        subscriptions = subscriptions[:subscriptions.index("    -- 步数和心率")]
-    subscriptions = re.sub(r"(?m)^(\s*)(src|index|str) =", r"\1local \2 =", subscriptions)
-    # dateWeek increments an existing local rather than declaring another value.
-    subscriptions = subscriptions.replace("local index = index + 1", "index = index + 1")
-    runtime = (ROOT / "src/runtime.lua").read_text(encoding="utf-8").replace("    -- BUILD_SUBSCRIPTIONS", subscriptions)
-    source = "local DEVICE = " + lua(config) + "\n" + common + "\n" + layout + "\n" + runtime
-    # Resolve both literal and dynamically constructed legacy filenames in imgPath.
+    runtime = (ROOT / "src/runtime.lua").read_text(encoding="utf-8")
     mapping = {name: name.removesuffix(".bin") + ".png"
                for name, path in resources(config).items() if path.suffix == ".png"}
-    source = source.replace("local function imgPath(name) return fsRoot .. name end",
-                            "local PNG_ASSETS = {" + ",".join(f"[{lua(key)}]={lua(value)}" for key, value in mapping.items()) + "}" +
-                            "\nlocal function imgPath(name) return fsRoot .. (PNG_ASSETS[name] or name) end")
-    return source
+    resource_map = "local PNG_ASSETS = {" + ",".join(f"[{lua(key)}]={lua(value)}" for key, value in mapping.items()) + "}\n"
+    return "local DEVICE = " + lua(config) + "\n" + resource_map + "\n".join([common, layout, subscriptions, runtime])
 
 
-def resources(config, source=None):
+def resources(config):
     folder = ROOT / "devices" / config["assets"]
     assets = {path.relative_to(folder).as_posix(): path for path in folder.rglob("*.bin")}
     for path in (ROOT / "assets/common").glob("*.png"):
         assets[path.stem + ".bin"] = path
-    for path in (folder / "originals").glob("*.png"):
+    for path in folder.glob("*.png"):
+        if path.name == "preview.png":
+            continue
         assets[path.stem + ".bin"] = path
     required = {f"{i}.bin" for i in range(10)} | {f"num{i}.bin" for i in range(10)}
     required.update(["bg.bin", "bg_n.bin", "eye_close.bin", "eye_close_n.bin", "smile.bin", "smile_n.bin",
@@ -96,7 +83,7 @@ def main():
     prepared = {}
     for name, config in targets.items():
         source = source_for(config)
-        prepared[name] = (source, resources(config, source))
+        prepared[name] = (source, resources(config))
     for name, config in targets.items():
         source, assets = prepared[name]
         output = ROOT / "build" / name

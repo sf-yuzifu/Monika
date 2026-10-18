@@ -1,6 +1,4 @@
 """Remove binary artwork superseded by the selected PNG source."""
-import shutil
-
 from build import resources
 from config import ROOT, load_devices
 
@@ -20,15 +18,6 @@ def main():
                 saved += binary.stat().st_size
                 binary.unlink()
                 removed += 1
-    # Preserve the standalone legacy Band 9 project with local PNG copies.
-    legacy = ROOT / "app/_lua/monika"
-    for png in sorted((ROOT / "assets/common").glob("*.png")):
-        binary = legacy / (png.stem + ".bin")
-        if binary.is_file():
-            shutil.copyfile(png, legacy / png.name)
-            saved += binary.stat().st_size
-            binary.unlink()
-            removed += 1
     print(f"Removed {removed} superseded BIN files ({saved:,} bytes)")
 
 

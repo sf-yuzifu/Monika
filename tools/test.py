@@ -72,7 +72,7 @@ def main():
             assert int(project.getroot().get("DeviceType")) == config["deviceType"]
             assert (int(widget.get("Width")), int(widget.get("Height"))) == (config["width"], config["height"])
         source = source_for(config)
-        selected = resources(config, source)
+        selected = resources(config)
         for resource, path in selected.items():
             if path.suffix != ".png":
                 continue

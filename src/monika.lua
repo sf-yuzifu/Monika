@@ -108,26 +108,36 @@ local heart_calc = function()
     end
 end
 
-local return_text = function(i)
+local previousGreeting, previousDialogue
+local excludedText
+local function pickText(first, last)
+    if excludedText ~= nil and excludedText >= first and excludedText <= last and first < last then
+        local choice = math.random(first, last - 1)
+        return choice >= excludedText and choice + 1 or choice
+    end
+    return math.random(first, last)
+end
+
+local selectText = function(i)
     local heart = validHeart()
     if DEVICE.imageText then
-        if i == "night" then return math.random(9, 12)
-        elseif i == "morning" then return math.random(1, 4)
-        elseif i == "afternoon" then return math.random(5, 8)
+        if i == "night" then return pickText(9, 12)
+        elseif i == "morning" then return pickText(1, 4)
+        elseif i == "afternoon" then return pickText(5, 8)
         elseif math.random(1, 1000) == 2 then
             current_time = animationTime; MONIKA_STATE = 3; return 21
-        else return math.random(13, 20) end
+        else return pickText(13, 20) end
     end
     if heart ~= nil and heart > 94 and i ~= nil then
         return heart_calc()
     elseif i == "night" then
-        return math.random(9, 12)
+        return pickText(9, 12)
     elseif i == "morning" then
-        return math.random(1, 4)
+        return pickText(1, 4)
     elseif i == "afternoon" then
-        return math.random(5, 8)
+        return pickText(5, 8)
     elseif step < 500 then
-        return math.random(13, 31)
+        return pickText(13, 31)
     else
         local c = math.random(1, 21)
         if c == 6 then
@@ -147,9 +157,19 @@ local return_text = function(i)
             MONIKA_STATE = 3
             return 41
         else
-            return math.random(13, 31)
+            return pickText(13, 31)
         end
     end
+end
+
+local function return_text(period)
+    if period ~= nil then excludedText = previousGreeting
+    else excludedText = previousDialogue end
+    local selected = selectText(period)
+    if period ~= nil then previousGreeting = selected
+    else previousDialogue = selected end
+    excludedText = nil
+    return selected
 end
 
 local function Image(root, src, pos)

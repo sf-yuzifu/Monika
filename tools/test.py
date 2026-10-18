@@ -98,6 +98,37 @@ def main():
         runtime = LuaRuntime(unpack_returned_tuples=True)
         runtime.execute(MOCK)
         runtime.execute(source)
+        runtime.execute('''
+            local random, date = math.random, os.date
+            math.random = function(a,b) return a end
+            os.date = function() return "8" end
+            local function dialogue()
+                for _,child in ipairs(clicks[2].obj.children) do
+                    if child.text ~= nil then return child.text end
+                end
+                return clicks[2].obj.children[2].src
+            end
+            local function greet()
+                ScreenStateChangedCB("ON","OFF","test")
+                ScreenStateChangedCB("OFF","ON","test")
+                return dialogue()
+            end
+            emit("healthStepCount",0)
+            emit("healthHeartRate",0)
+            local firstGreeting = greet()
+            click(1); advance(100)
+            local firstDialogue = dialogue()
+            local secondGreeting = greet()
+            check(firstGreeting ~= secondGreeting, "greetings exclude previous greeting across clicks")
+            click(1); advance(100)
+            check(firstDialogue ~= dialogue(), "ordinary dialogue excludes previous dialogue across greetings")
+            for i=1,20 do
+                local previous = dialogue()
+                click(1); advance(100)
+                check(previous ~= dialogue(), "consecutive ordinary dialogue does not repeat")
+            end
+            math.random, os.date = random, date
+        ''')
         if not config["imageText"]:
             runtime.execute('''
                 local random = math.random

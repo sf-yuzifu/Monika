@@ -2,7 +2,10 @@ local lvgl = require("lvgl")
 local dataman = require("dataman")
 local fsRoot = SCRIPT_PATH
 local MONIKA_STATE = 1
-local current_time = lvgl.tick_get()
+-- Active-screen milliseconds, advanced by the animation timer.
+-- Some firmwares (including Band 9 Pro) do not expose lvgl.tick_get.
+local animationTime = 0
+local current_time = 0
 local step, heart = 0, 0
 -- DEVICE and PNG_ASSETS are embedded by tools/build.py.
 local function imgPath(name) return fsRoot .. (PNG_ASSETS[name] or name) end
@@ -100,7 +103,7 @@ local return_text = function(i)
         elseif i == "morning" then return math.random(1, 4)
         elseif i == "afternoon" then return math.random(5, 8)
         elseif math.random(1, 1000) == 2 then
-            current_time = lvgl.tick_get(); MONIKA_STATE = 3; return 21
+            current_time = animationTime; MONIKA_STATE = 3; return 21
         else return math.random(13, 20) end
     end
     if heart > 94 and heart < 250 and i ~= nil then
@@ -128,7 +131,7 @@ local return_text = function(i)
         elseif c == 7 and heart < 250 then
             return heart_calc()
         elseif math.random(1, 1000) == 2 then
-            current_time = lvgl.tick_get()
+            current_time = animationTime
             MONIKA_STATE = 3
             return 41
         else

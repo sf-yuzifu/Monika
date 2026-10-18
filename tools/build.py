@@ -7,6 +7,7 @@ import struct
 import subprocess
 import xml.etree.ElementTree as ET
 from pathlib import Path
+from PIL import Image
 
 from config import ROOT, load_devices
 
@@ -74,7 +75,7 @@ def main():
     parser.add_argument("--device", choices=["all", *devices], default="all")
     parser.add_argument("--compiler", type=Path)
     parser.add_argument("--id", default="979825266001")
-    parser.add_argument("--version", type=int, default=2)
+    parser.add_argument("--version", type=int, default=3)
     args = parser.parse_args()
     if not re.fullmatch(r"(?:[0-9]{9}|[0-9]{12})", args.id) or not 0 <= args.version <= 0xFFFFFFFF:
         parser.error("ID must be 9 or 12 ASCII digits; version must fit UInt32")
@@ -91,6 +92,8 @@ def main():
         if (output / "app").exists():
             shutil.rmtree(output / "app")
         app.mkdir(parents=True, exist_ok=True)
+        (output / "images").mkdir(exist_ok=True)
+        (output / "output").mkdir(exist_ok=True)
         for relative, asset in assets.items():
             if asset.suffix == ".png":
                 relative = str(Path(relative).with_suffix(".png"))
@@ -98,7 +101,9 @@ def main():
             destination.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(asset, destination)
         (app / "monika.lua").write_text(source, encoding="utf-8")
-        shutil.copyfile(ROOT / "devices" / config["assets"] / "preview.png", output / "preview.png")
+        with Image.open(ROOT / "devices" / config["assets"] / "preview.png") as preview:
+            preview.resize(tuple(config.get("previewSize", [config["width"], config["height"]])), Image.Resampling.LANCZOS).save(output / "preview.png")
+        shutil.copyfile(output / "preview.png", output / "images/preview.png")
         project = ET.Element("FaceProject", DeviceType=str(config["deviceType"]))
         screen = ET.SubElement(project, "Screen", Title="莫妮卡", Bitmap="preview.png")
         ET.SubElement(screen, "Widget", Shape="34", Name="app__lua%2Fmonika%2Fmonika.lua", X="0", Y="0",
@@ -112,6 +117,8 @@ def main():
             fresh = staging / f"monika-{name}.face"
             fresh.unlink(missing_ok=True)
             subprocess.run([str(args.compiler.resolve()), "-b", str(path), str(staging), fresh.name, "252661004"], check=True)
+            if not fresh.is_file():
+                raise RuntimeError(f"Compiler did not produce {name} package; inspect compiler errors above")
             patch_metadata(fresh, args.id, args.version)
             dist = ROOT / "dist"
             dist.mkdir(exist_ok=True)

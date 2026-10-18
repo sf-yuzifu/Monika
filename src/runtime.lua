@@ -16,7 +16,7 @@ local function uiCreate()
         else obj:add_flag(lvgl.FLAG.HIDDEN) end
     end
     local function render()
-        local now = lvgl.tick_get()
+        local now = animationTime
         local elapsed = (now - current_time) % 4294967296
         if MONIKA_STATE == 3 and elapsed >= 1000 then
             MONIKA_STATE = 2
@@ -87,14 +87,19 @@ local function uiCreate()
         active = true
         text = return_text(getTime())
         MONIKA_STATE = 2
-        current_time = lvgl.tick_get()
+        current_time = animationTime
         lastState = nil
         render()
     end
     on()
     local timer = lvgl.Timer {
         period = 100, repeat_count = -1,
-        cb = function() if active then render() end end,
+        cb = function()
+            if active then
+                animationTime = animationTime + 100
+                render()
+            end
+        end,
     }
     timer:resume()
     function ScreenStateChangedCB(previous, current, reason)

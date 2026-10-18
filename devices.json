@@ -54,6 +54,7 @@
     ]
   },
   "band9pro": {
+    "previewSize": [230, 328],
     "width": 336,
     "height": 480,
     "deviceType": 367,

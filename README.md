@@ -53,7 +53,7 @@ python tools/build.py --device redmiwatch6
 python tools/build.py --device band9 --compiler "<EasyFace目录>\Compiler.exe" --id 979825266001 --version 2
 ```
 
-生成工程位于 `build/<目标>/monika.fprj`，可通过 EasyFace 打开；成功编译的安装包位于 `dist/monika-<目标>.face`。默认表盘 ID 为 `979825266001`，发布版本为 `2`。编译脚本同步写入 Gen2 包头；`--id` / `--version` 可覆盖默认值。
+生成工程位于 `build/<目标>/monika.fprj`，可通过 EasyFace 打开；成功编译的安装包位于 `dist/monika-<目标>.face`。默认表盘 ID 为 `979825266001`，发布版本为 `3`。编译脚本同步写入 Gen2 包头；`--id` / `--version` 可覆盖默认值。
 
 `--device band11` 会生成 `band10` 工程，编译时同时输出 `monika-band10.face` 和 `monika-band11.face`。`build/`、`dist/` 均为忽略的构建产物，修改源码后重新生成。
 
@@ -92,11 +92,13 @@ requirements.txt        回归使用的 Python 依赖
 
 修改对话内容和选择规则：`src/monika.lua`；修改交互与状态时长：`src/runtime.lua`；调整设备布局：`devices/<目标>/layout.lua` 与 `devices.json`。
 
-`python tools/test.py` 使用 Lua 5.4 验证全部七款配置，包括资源完整性、数据边界、电量显示、点击对话、彩蛋恢复、亮熄屏定时器和已生成工程的尺寸、素材。生成工程仅使用 Python 标准库，模拟测试需要 `requirements.txt` 中的 Lupa。
+`python tools/test.py` 使用 Lua 5.4 验证全部七款配置，包括资源完整性、数据边界、电量显示、点击对话、彩蛋恢复、亮熄屏定时器和已生成工程的尺寸、素材。构建使用 Pillow 将设计预览调整为编译器要求的设备尺寸，模拟测试使用 Lupa；依赖统一列在 `requirements.txt` 中。
 
 完整文字模式沿用旧版彩蛋选择规则：步数达到 500 且未选中健康对话后，才进行千分之一抽取，因此整体触发概率低于 0.1%。图片文字模式在普通点击对话时进行千分之一抽取。
 
 真机检查重点为中文字体、人物眼部贴图对齐、对话换行、触摸事件、长按切换表盘与亮熄屏恢复。
+
+计时使用 100ms 动画定时器累加的亮屏时长，不依赖部分固件缺失的 `lvgl.tick_get()`。熄屏时暂停累计；固件繁忙导致回调延迟时，动画持续时间可能相应延长。
 
 ## 相关链接
 

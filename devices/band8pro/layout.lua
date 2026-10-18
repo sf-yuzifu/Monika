@@ -57,7 +57,7 @@ local function createWatchface(parent)
         if (y <= DEVICE.touchMaxY and MONIKA_STATE ~= 3) then
             MONIKA_STATE = 2
             text = return_text()
-            current_time = lvgl.tick_get()
+            current_time = animationTime
         end
     end)
 
@@ -66,7 +66,7 @@ local function createWatchface(parent)
         local x, y = indev:get_point()
         if (MONIKA_STATE ~= 1) then
             MONIKA_STATE = 1
-            current_time = lvgl.tick_get()
+            current_time = animationTime
         end
     end)
 

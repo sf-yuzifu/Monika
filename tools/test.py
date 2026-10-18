@@ -35,7 +35,6 @@ lvgl = {
     EVENT={SHORT_CLICKED=1}, BUILTIN_FONT={MONTSERRAT_14=14},
     HOR_RES=function() return 432 end, VER_RES=function() return 514 end,
     OPA=function(n) return n end, Font=function(name,size) return size end,
-    tick_get=function() return now end,
     indev={get_act=function() return {get_point=function() return 100,100 end} end},
 }
 function lvgl.Timer(values)
@@ -53,8 +52,11 @@ function emit(key,value)
     if sub then sub.cb(sub.obj,value) end
 end
 function advance(ms)
-    now=now+ms
-    for _,timer in ipairs(timers) do if not timer.paused then timer.cb() end end
+    for _,timer in ipairs(timers) do
+        if not timer.paused then
+            for i=1,ms // timer.period do timer.cb() end
+        end
+    end
 end
 function click(i) clicks[i].cb(clicks[i].obj,1) end
 function check(condition,message) assert(condition,message) end
@@ -96,6 +98,7 @@ def main():
         runtime.execute(source)
         runtime.execute('''
             check(#timers == 1, "one animation timer")
+            check(lvgl.tick_get == nil, "regression: firmware without tick_get")
             check(subscriptions.timeCentiSecond == nil, "no centisecond redraw subscription")
             for _,key in ipairs({"systemStatusBattery","timeHourHigh","dateMonth","dateWeek"}) do
                 emit(key,2147483647)

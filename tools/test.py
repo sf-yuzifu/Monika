@@ -116,7 +116,7 @@ def main():
                 assert generated.read_bytes() == data, (name, resource)
         runtime = LuaRuntime(unpack_returned_tuples=True)
         runtime.execute(MOCK)
-        runtime.execute(source + "\n_testDuration = dialogueDuration\n_testMessages = totalText\n_testSelect = return_text")
+        runtime.execute(source + "\n_testDuration = dialogueDuration\n_testCatalog = dialogues\n_testSelect = return_text\n_testCurrent = function() return dialogue end")
         if not config["imageText"]:
             runtime.execute('''
                 local random = math.random
@@ -130,8 +130,8 @@ def main():
                 for _,case in ipairs(cases) do
                     emit("healthStepCount",case[1]*256)
                     local selected = _testSelect()
-                    if case[2] then check(selected == case[2], "inclusive step threshold " .. case[1])
-                    else check(selected >= 13 and selected <= 31, "below 500 uses daily dialogue") end
+                    if case[2] then check(selected == _testCatalog.steps[case[2]-31], "inclusive step threshold " .. case[1])
+                    else check(selected.category == "daily", "below 500 uses daily dialogue") end
                 end
                 emit("healthStepCount",0)
                 math.random = random
@@ -161,23 +161,23 @@ def main():
             math.random = random
         ''')
         duration = runtime.globals()._testDuration
+        catalog = runtime.globals()._testCatalog
         if config["imageText"]:
-            assert len(config["dialogueDurations"]) == 21
-            for index, expected in enumerate(config["dialogueDurations"], 1):
-                assert 3000 <= expected <= 8000
-                assert duration(index) == expected
+            assert sum(map(len, config["imageDialogues"].values())) == 21
+            for category, entries in config["imageDialogues"].items():
+                for index, entry in enumerate(entries, 1):
+                    assert 3000 <= entry["duration"] <= 8000
+                    assert duration(catalog[category][index]) == entry["duration"]
         else:
-            messages = runtime.globals()._testMessages
-            for index in [1, 13, 15, 22, 31, 41]:
-                expected = max(3000, min(8000, 1500 + len(messages[index]) * 180))
-                assert duration(index) == expected, (name, index)
+            for category in ["morning", "daily", "easterEgg"]:
+                for _, entry in catalog[category].items():
+                    expected = max(3000, min(8000, 1500 + len(entry.text) * 180))
+                    assert duration(entry) == expected, (name, category)
         runtime.execute('''
             local random = math.random
             math.random = function(a,b) return a end
             click(1); advance(100)
-            local index = 13
-            -- The initial greeting has its own history; first tap selects daily entry 13.
-            local duration = _testDuration(index)
+            local duration = _testDuration(_testCurrent())
             advance((duration // 100 - 2) * 100)
             check(not clicks[2].obj.flags[lvgl.FLAG.HIDDEN], "dialogue remains before reading deadline")
             advance(200)

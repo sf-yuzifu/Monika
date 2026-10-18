@@ -26,23 +26,23 @@ local function uiCreate()
     syncAnimationTime = syncExternalTime
     local function render()
         local heartValue = validHeart()
-        local heartDialogue = not DEVICE.imageText and text >= 36 and text <= 40
-        if heartDialogue and heartValue == nil then
-            text = math.random(13, 31)
+        local isHeartDialogue = dialogue.category == "heart"
+        if isHeartDialogue and heartValue == nil then
+            dialogue = pickDialogue("daily", dialogue)
         end
         local now = animationTime
         local elapsed = (now - current_time) % 4294967296
-        if MONIKA_STATE == 3 and elapsed >= 1000 then
-            MONIKA_STATE = 2
-            text = DEVICE.imageText and 21 or 41
+        if MONIKA_STATE == STATE.SCARE and elapsed >= 1000 then
+            MONIKA_STATE = STATE.TALKING
+            dialogue = dialogues.easterEgg[1]
             current_time = now
             elapsed = 0
-        elseif MONIKA_STATE == 2 and elapsed >= dialogueDuration(text) then
-            MONIKA_STATE = 1
+        elseif MONIKA_STATE == STATE.TALKING and elapsed >= dialogueDuration(dialogue) then
+            MONIKA_STATE = STATE.IDLE
             current_time = now
             elapsed = 0
             eyeTime = math.random(7000, 10000)
-        elseif MONIKA_STATE == 1 and elapsed >= eyeTime + 400 then
+        elseif MONIKA_STATE == STATE.IDLE and elapsed >= eyeTime + 400 then
             current_time = now
             elapsed = 0
             eyeTime = math.random(7000, 10000)
@@ -51,11 +51,11 @@ local function uiCreate()
             night = getTime() == "night"
             themeDeadline = animationTime + 60000
         end
-        local blink = MONIKA_STATE == 1 and elapsed >= eyeTime
-        if lastState == MONIKA_STATE and lastText == text and lastNight == night and lastBlink == blink
-            and (not heartDialogue or lastHeart == heartValue) then return end
-        local scare = MONIKA_STATE == 3
-        local talking = MONIKA_STATE == 2
+        local blink = MONIKA_STATE == STATE.IDLE and elapsed >= eyeTime
+        if lastState == MONIKA_STATE and lastText == dialogue and lastNight == night and lastBlink == blink
+            and (not isHeartDialogue or lastHeart == heartValue) then return end
+        local scare = MONIKA_STATE == STATE.SCARE
+        local talking = MONIKA_STATE == STATE.TALKING
         setChanged(watchface.objImage, { src = imgPath(scare and "scare.bin" or (night and "bg_n.bin" or "bg.bin")) })
         showChanged(watchface.time.widget, not scare)
         showChanged(watchface.dateCont.widget, not scare)
@@ -70,22 +70,22 @@ local function uiCreate()
         end
         if talking then
             if DEVICE.imageText then
-                setChanged(watchface.text, { src = imgPath("text/text" .. text .. ".bin") })
+                setChanged(watchface.text, { src = imgPath(dialogue.image) })
             else
-                local message = string.format(totalText[text], heart)
+                local message = dialogueMessage(dialogue)
                 setChanged(watchface.text, { text = message })
                 for i = 2, 9 do setChanged(watchface["text" .. i], { text = message }) end
             end
         end
-        lastState, lastText, lastNight, lastBlink = MONIKA_STATE, text, night, blink
+        lastState, lastText, lastNight, lastBlink = MONIKA_STATE, dialogue, night, blink
         lastHeart = heartValue
     end
     local function schedule()
         if not timer or not active then return end
         local elapsed = animationTime - current_time
         local duration
-        if MONIKA_STATE == 3 then duration = 1000
-        elseif MONIKA_STATE == 2 then duration = dialogueDuration(text)
+        if MONIKA_STATE == STATE.SCARE then duration = 1000
+        elseif MONIKA_STATE == STATE.TALKING then duration = dialogueDuration(dialogue)
         else duration = elapsed < eyeTime and eyeTime or eyeTime + 400 end
         scheduledDelay = math.max(1, math.min(duration - elapsed, themeDeadline - animationTime))
         scheduledAt = os.time()
@@ -134,8 +134,8 @@ local function uiCreate()
     subscribeData(dataman, watchface)
     local function on()
         active = true
-        text = return_text(getTime())
-        MONIKA_STATE = 2
+        dialogue = return_text(getTime())
+        MONIKA_STATE = STATE.TALKING
         current_time = animationTime
         lastState = nil
         night = getTime() == "night"

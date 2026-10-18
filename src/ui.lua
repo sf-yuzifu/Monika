@@ -1,3 +1,47 @@
+local function Image(root, src, pos)
+    return { widget = root:Image { src = src, x = pos[1], y = pos[2] } }
+end
+
+---@param root Object
+local function imageGroup(root, pos)
+    --- @class Image
+    local t = {} -- create new table
+
+    t.widget = lvgl.Object(root, {
+        outline_width = 0,
+        border_width = 0,
+        pad_all = 0,
+        bg_opa = 0,
+        bg_color = 0,
+        w = lvgl.SIZE_CONTENT,
+        h = lvgl.SIZE_CONTENT,
+        x = pos[1],
+        y = pos[2],
+    })
+
+    function t:setChild(src, pos)
+        local img = t.widget:Image { src = src, x = pos.x, y = pos.y }
+        return img
+    end
+
+    function t:setText(text, pos, color)
+        local stext = t.widget:Label { w = pos.w,
+            h = pos.h,
+            x = pos.x,
+            y = pos.y,
+            text = text,
+            text_color = color,
+            font_size = DEVICE.fontSize,
+            text_font = textFont(),
+        }
+        return stext
+    end
+
+    return t
+end
+
+
+
 -- Device-specific coordinates live in DEVICE.layout; behavior is shared.
 local function setChanged(obj, values)
     local cached = propertyCache[obj]
@@ -59,22 +103,24 @@ local function createWatchface(parent)
                 x = label.x + offset[1], y = label.y + offset[2],
             }, i == 9 and "#ffffff" or "#000000")
         end
+    else
+        t.text = t.msg:setChild(imgPath(dialogues.morning[1].image), layout.imageTextPosition)
     end
     face:onevent(lvgl.EVENT.SHORT_CLICKED, function()
         local indev = lvgl.indev.get_act()
         local x, y = indev:get_point()
-        if y <= DEVICE.touchMaxY and MONIKA_STATE ~= 3 then
+        if y <= DEVICE.touchMaxY and MONIKA_STATE ~= STATE.SCARE then
             syncAnimationTime()
-            MONIKA_STATE = 2
-            text = return_text()
+            MONIKA_STATE = STATE.TALKING
+            dialogue = return_text()
             current_time = animationTime
             refreshUI()
         end
     end)
     t.msg.widget:onevent(lvgl.EVENT.SHORT_CLICKED, function()
-        if MONIKA_STATE ~= 1 then
+        if MONIKA_STATE ~= STATE.IDLE then
             syncAnimationTime()
-            MONIKA_STATE = 1
+            MONIKA_STATE = STATE.IDLE
             current_time = animationTime
             refreshUI()
         end

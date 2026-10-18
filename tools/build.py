@@ -26,13 +26,14 @@ def lua(value):
 
 def source_for(config):
     common = (ROOT / "src/monika.lua").read_text(encoding="utf-8")
+    dialogue = (ROOT / "src/dialogue.lua").read_text(encoding="utf-8")
     layout = (ROOT / "src/ui.lua").read_text(encoding="utf-8")
     subscriptions = (ROOT / "src/subscriptions.lua").read_text(encoding="utf-8")
     runtime = (ROOT / "src/runtime.lua").read_text(encoding="utf-8")
     mapping = {name: name.removesuffix(".bin") + ".png"
                for name, path in resources(config).items() if path.suffix == ".png"}
     resource_map = "local PNG_ASSETS = {" + ",".join(f"[{lua(key)}]={lua(value)}" for key, value in mapping.items()) + "}\n"
-    return "local DEVICE = " + lua(config) + "\n" + resource_map + "\n".join([common, layout, subscriptions, runtime])
+    return "local DEVICE = " + lua(config) + "\n" + resource_map + "\n".join([common, dialogue, layout, subscriptions, runtime])
 
 
 def resources(config):
@@ -49,7 +50,7 @@ def resources(config):
                      "scare.bin", "msg.bin", "ap.bin", "num%.bin", "num_mao.bin", "num_gang.bin",
                      "sun.bin", "mon.bin", "tue.bin", "wed.bin", "thu.bin", "fri.bin", "sat.bin"])
     if config["imageText"]:
-        required.update(f"text/text{i}.bin" for i in range(1, 22))
+        required.update(entry["image"] for entries in config["imageDialogues"].values() for entry in entries)
     missing = required - assets.keys()
     if missing:
         raise FileNotFoundError(f"{config['assets']}: missing {sorted(missing)}")

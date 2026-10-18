@@ -66,7 +66,8 @@ devices/                分设备素材与设计预览
 devices.json            设备尺寸、字体、状态坐标、继承与包别名
 images/                 README 展示图片
 src/
-  monika.lua            对话选择、字体和控件辅助函数
+  monika.lua            共享上下文、状态常量、资源路径和字体
+  dialogue.lua          分类文案、对话选择、去重和阅读时长
   ui.lua                共用布局创建、点击行为、电量排列和增量属性更新
   runtime.lua           状态渲染、数据过滤、定时器与屏幕生命周期
   subscriptions.lua     时间、日期与健康数据订阅
@@ -92,7 +93,7 @@ requirements.txt        回归使用的 Python 依赖
 
 ### 修改与验证
 
-修改对话内容和选择规则：`src/monika.lua`；修改状态时长：`src/runtime.lua`；修改共用 UI 行为：`src/ui.lua`；调整设备布局：`devices.json`。
+修改对话内容和选择规则：`src/dialogue.lua`；修改状态调度：`src/runtime.lua`；修改共用 UI 行为：`src/ui.lua`；调整设备布局：`devices.json`。对话按 `morning/afternoon/night/daily/steps/heart/easterEgg` 分类，运行时直接保存对话对象；8 Pro 的 `imageDialogues` 按分类显式配置每张图片的路径和阅读时长，不再依赖全局编号区间。
 
 `python tools/test.py` 使用 Lua 5.4 验证全部七款配置，包括资源完整性、数据边界、电量显示、点击对话、彩蛋恢复、亮熄屏定时器和已生成工程的尺寸、素材。构建使用 Pillow 将设计预览调整为编译器要求的设备尺寸，模拟测试使用 Lupa；依赖统一列在 `requirements.txt` 中。
 
@@ -100,7 +101,7 @@ requirements.txt        回归使用的 Python 依赖
 
 真机检查重点为中文字体、人物眼部贴图对齐、对话换行、触摸事件、长按切换表盘与亮熄屏恢复。
 
-动画使用单一定时器按下一事件期限动态调度，持续亮屏每 60 秒维护日夜主题，点击和心率变化主动刷新；熄屏暂停。计时不依赖部分固件缺失的 `lvgl.tick_get()`，定时回调按计划间隔累计，外部事件通过秒级 `os.time()` 同步部分已过去时间。固件繁忙或秒级精度可能令时长略有偏差，动态周期调度的兼容性与实际功耗尚需真机验证。
+动画使用单一定时器按下一事件期限动态调度，持续亮屏每 60 秒维护日夜主题，点击和心率变化主动刷新；熄屏暂停。计时不依赖部分固件缺失的 `lvgl.tick_get()`，定时回调按计划间隔累计，外部事件通过秒级 `os.time()` 同步部分已过去时间。固件繁忙或秒级精度可能令时长略有偏差。用户真机试用暂未发现调度问题；实际功耗收益尚未量化，其他设备兼容性仍需分别验证。
 
 ## 相关链接
 

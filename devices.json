@@ -344,29 +344,6 @@
     "talkTimeY": 245,
     "talkDateY": 313,
     "imageText": true,
-    "dialogueDurations": [
-      4200,
-      4200,
-      4200,
-      4200,
-      3600,
-      3600,
-      4200,
-      4000,
-      4400,
-      4600,
-      4800,
-      4000,
-      3600,
-      4400,
-      3700,
-      4000,
-      3600,
-      4000,
-      4000,
-      3800,
-      3800
-    ],
     "fonts": [
       "MiSans-Demibold",
       "misansw_demibold",
@@ -488,12 +465,6 @@
               "image": "msg.bin",
               "x": 18,
               "y": 0
-            },
-            {
-              "name": "text",
-              "image": "text/text1.bin",
-              "x": 31,
-              "y": 26
             }
           ]
         }
@@ -520,6 +491,106 @@
           174,
           190
         ]
+      ],
+      "imageTextPosition": {
+        "x": 31,
+        "y": 26
+      }
+    },
+    "imageDialogues": {
+      "morning": [
+        {
+          "image": "text/text1.bin",
+          "duration": 4200
+        },
+        {
+          "image": "text/text2.bin",
+          "duration": 4200
+        },
+        {
+          "image": "text/text3.bin",
+          "duration": 4200
+        },
+        {
+          "image": "text/text4.bin",
+          "duration": 4200
+        }
+      ],
+      "afternoon": [
+        {
+          "image": "text/text5.bin",
+          "duration": 3600
+        },
+        {
+          "image": "text/text6.bin",
+          "duration": 3600
+        },
+        {
+          "image": "text/text7.bin",
+          "duration": 4200
+        },
+        {
+          "image": "text/text8.bin",
+          "duration": 4000
+        }
+      ],
+      "night": [
+        {
+          "image": "text/text9.bin",
+          "duration": 4400
+        },
+        {
+          "image": "text/text10.bin",
+          "duration": 4600
+        },
+        {
+          "image": "text/text11.bin",
+          "duration": 4800
+        },
+        {
+          "image": "text/text12.bin",
+          "duration": 4000
+        }
+      ],
+      "daily": [
+        {
+          "image": "text/text13.bin",
+          "duration": 3600
+        },
+        {
+          "image": "text/text14.bin",
+          "duration": 4400
+        },
+        {
+          "image": "text/text15.bin",
+          "duration": 3700
+        },
+        {
+          "image": "text/text16.bin",
+          "duration": 4000
+        },
+        {
+          "image": "text/text17.bin",
+          "duration": 3600
+        },
+        {
+          "image": "text/text18.bin",
+          "duration": 4000
+        },
+        {
+          "image": "text/text19.bin",
+          "duration": 4000
+        },
+        {
+          "image": "text/text20.bin",
+          "duration": 3800
+        }
+      ],
+      "easterEgg": [
+        {
+          "image": "text/text21.bin",
+          "duration": 3800
+        }
       ]
     }
   },

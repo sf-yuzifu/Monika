@@ -11,10 +11,6 @@ local function uiCreate()
     local lastState, lastText, lastNight, lastBlink, lastHeart
     local active = true
     local eyeTime = math.random(7000, 10000)
-    local function show(obj, visible)
-        if visible then obj:clear_flag(lvgl.FLAG.HIDDEN)
-        else obj:add_flag(lvgl.FLAG.HIDDEN) end
-    end
     local function render()
         local heartValue = validHeart()
         local heartDialogue = not DEVICE.imageText and text >= 36 and text <= 40
@@ -44,25 +40,25 @@ local function uiCreate()
             and (not heartDialogue or lastHeart == heartValue) then return end
         local scare = MONIKA_STATE == 3
         local talking = MONIKA_STATE == 2
-        watchface.objImage:set { src = imgPath(scare and "scare.bin" or (night and "bg_n.bin" or "bg.bin")) }
-        show(watchface.time.widget, not scare)
-        show(watchface.dateCont.widget, not scare)
-        show(watchface.chargeCont.widget, not scare)
-        show(watchface.msg.widget, talking)
-        show(watchface.monikaEye.widget, not scare and (talking or blink))
-        watchface.time.widget:set { y = talking and DEVICE.talkTimeY or DEVICE.timeY }
-        watchface.dateCont.widget:set { y = talking and DEVICE.talkDateY or DEVICE.dateY }
+        setChanged(watchface.objImage, { src = imgPath(scare and "scare.bin" or (night and "bg_n.bin" or "bg.bin")) })
+        showChanged(watchface.time.widget, not scare)
+        showChanged(watchface.dateCont.widget, not scare)
+        showChanged(watchface.chargeCont.widget, not scare)
+        showChanged(watchface.msg.widget, talking)
+        showChanged(watchface.monikaEye.widget, not scare and (talking or blink))
+        setChanged(watchface.time.widget, { y = talking and DEVICE.talkTimeY or DEVICE.timeY })
+        setChanged(watchface.dateCont.widget, { y = talking and DEVICE.talkDateY or DEVICE.dateY })
         if talking or blink then
             local expression = talking and "smile" or "eye_close"
-            watchface.monikaEye.widget:set { src = imgPath(expression .. (night and "_n" or "") .. ".bin") }
+            setChanged(watchface.monikaEye.widget, { src = imgPath(expression .. (night and "_n" or "") .. ".bin") })
         end
         if talking then
             if DEVICE.imageText then
-                watchface.text:set { src = imgPath("text/text" .. text .. ".bin") }
+                setChanged(watchface.text, { src = imgPath("text/text" .. text .. ".bin") })
             else
                 local message = string.format(totalText[text], heart)
-                watchface.text:set { text = message }
-                for i = 2, 9 do watchface["text" .. i]:set { text = message } end
+                setChanged(watchface.text, { text = message })
+                for i = 2, 9 do setChanged(watchface["text" .. i], { text = message }) end
             end
         end
         lastState, lastText, lastNight, lastBlink = MONIKA_STATE, text, night, blink

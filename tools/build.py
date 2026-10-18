@@ -26,7 +26,7 @@ def lua(value):
 
 def source_for(config):
     common = (ROOT / "src/monika.lua").read_text(encoding="utf-8")
-    layout = (ROOT / "devices" / config["assets"] / "layout.lua").read_text(encoding="utf-8")
+    layout = (ROOT / "src/ui.lua").read_text(encoding="utf-8")
     subscriptions = (ROOT / "src/subscriptions.lua").read_text(encoding="utf-8")
     runtime = (ROOT / "src/runtime.lua").read_text(encoding="utf-8")
     mapping = {name: name.removesuffix(".bin") + ".png"

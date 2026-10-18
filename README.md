@@ -62,11 +62,12 @@ python tools/build.py --device band9 --compiler "<EasyFace目录>\Compiler.exe" 
 
 ```text
 assets/common/          共用 PNG 数字、星期、日期符号与电量图标
-devices/                分设备素材、设计预览与布局
+devices/                分设备素材与设计预览
 devices.json            设备尺寸、字体、状态坐标、继承与包别名
 images/                 README 展示图片
 src/
   monika.lua            对话选择、字体和控件辅助函数
+  ui.lua                共用布局创建、点击行为、电量排列和增量属性更新
   runtime.lua           状态渲染、数据过滤、定时器与屏幕生命周期
   subscriptions.lua     时间、日期与健康数据订阅
 tools/
@@ -77,7 +78,7 @@ tools/
 requirements.txt        回归使用的 Python 依赖
 ```
 
-构建时将共用源码、设备配置和对应的 `devices/<目标>/layout.lua` 合成为单个 Lua 入口；无需设备侧模块加载。布局文件负责各元素位置及不同位数电量的排列，运行逻辑由 `src/` 统一管理。
+构建时将共用源码和设备配置合成为单个 Lua 入口，无需设备侧模块加载。`devices.json` 的 `layout` 保存各元素位置、描边文字尺寸和不同位数电量排列，`src/ui.lua` 统一创建控件和绑定点击行为。背景、表情、文字、位置及可见状态分别缓存，只有变化的属性才写入控件。
 
 ### 素材
 
@@ -91,7 +92,7 @@ requirements.txt        回归使用的 Python 依赖
 
 ### 修改与验证
 
-修改对话内容和选择规则：`src/monika.lua`；修改交互与状态时长：`src/runtime.lua`；调整设备布局：`devices/<目标>/layout.lua` 与 `devices.json`。
+修改对话内容和选择规则：`src/monika.lua`；修改状态时长：`src/runtime.lua`；修改共用 UI 行为：`src/ui.lua`；调整设备布局：`devices.json`。
 
 `python tools/test.py` 使用 Lua 5.4 验证全部七款配置，包括资源完整性、数据边界、电量显示、点击对话、彩蛋恢复、亮熄屏定时器和已生成工程的尺寸、素材。构建使用 Pillow 将设计预览调整为编译器要求的设备尺寸，模拟测试使用 Lupa；依赖统一列在 `requirements.txt` 中。
 

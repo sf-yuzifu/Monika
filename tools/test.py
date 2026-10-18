@@ -13,9 +13,17 @@ subscriptions = {}
 timers = {}
 clicks = {}
 local methods = {}
-function methods:set(values) for k,v in pairs(values) do self[k] = v end end
-function methods:add_flag(flag) self.flags[flag] = true end
-function methods:clear_flag(flag) self.flags[flag] = nil end
+writes = {}
+function methods:set(values)
+    writes[#writes+1]={obj=self,kind="set",values=values}
+    for k,v in pairs(values) do self[k] = v end
+end
+function methods:add_flag(flag)
+    writes[#writes+1]={obj=self,kind="flag"}; self.flags[flag] = true
+end
+function methods:clear_flag(flag)
+    writes[#writes+1]={obj=self,kind="flag"}; self.flags[flag] = nil
+end
 function methods:get_img_size() return 20,24 end
 function methods:get_child_cnt() return #self.children end
 function methods:get_child(i) return self.children[i+1] end
@@ -98,6 +106,30 @@ def main():
         runtime = LuaRuntime(unpack_returned_tuples=True)
         runtime.execute(MOCK)
         runtime.execute(source + "\n_testDuration = dialogueDuration\n_testMessages = totalText")
+        runtime.execute('''
+            local random = math.random
+            math.random = function(a,b) return a end
+            advance(8100)
+            local face = clicks[1].obj
+            local eye = face.children[5]
+            writes = {}
+            advance(7500)
+            check(#writes > 0, "blink changes eye")
+            for _,write in ipairs(writes) do
+                check(write.obj == eye, "blink only updates eye, not background/layout/text")
+            end
+            click(1); advance(100)
+            writes = {}
+            click(1); advance(100)
+            check(#writes > 0, "new dialogue updates content")
+            for _,write in ipairs(writes) do
+                check(write.kind == "set" and (write.values.text ~= nil or write.values.src ~= nil), "dialogue only updates content")
+                check(write.obj ~= face.children[1] and write.obj ~= eye, "dialogue preserves background and eye")
+            end
+            writes = {}; advance(100)
+            check(#writes == 0, "unchanged state performs no UI writes")
+            math.random = random
+        ''')
         duration = runtime.globals()._testDuration
         if config["imageText"]:
             assert len(config["dialogueDurations"]) == 21

@@ -21,6 +21,7 @@ end
 -- DEVICE and PNG_ASSETS are embedded by tools/build.py.
 local function imgPath(name) return fsRoot .. (PNG_ASSETS[name] or name) end
 local cachedFont
+local propertyCache = {}
 local function textFont()
     if cachedFont then return cachedFont end
     for _, name in ipairs(DEVICE.fonts) do

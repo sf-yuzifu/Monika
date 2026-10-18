@@ -152,11 +152,11 @@ local selectText = function(i)
     else
         local c = math.random(1, 21)
         if c == 6 then
-            if step > 10000 then
+            if step >= 10000 then
                 return 35
-            elseif step > 6000 then
+            elseif step >= 6000 then
                 return 34
-            elseif step > 1000 then
+            elseif step >= 1000 then
                 return 33
             else
                 return 32

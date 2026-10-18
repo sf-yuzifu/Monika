@@ -105,7 +105,26 @@ def main():
                 assert generated.read_bytes() == data, (name, resource)
         runtime = LuaRuntime(unpack_returned_tuples=True)
         runtime.execute(MOCK)
-        runtime.execute(source + "\n_testDuration = dialogueDuration\n_testMessages = totalText")
+        runtime.execute(source + "\n_testDuration = dialogueDuration\n_testMessages = totalText\n_testSelect = return_text")
+        if not config["imageText"]:
+            runtime.execute('''
+                local random = math.random
+                math.random = function(a,b) if b == 21 then return 6 else return a end end
+                local cases = {
+                    {499, false}, {500,32}, {501,32},
+                    {999,32}, {1000,33}, {1001,33},
+                    {5999,33}, {6000,34}, {6001,34},
+                    {9999,34}, {10000,35}, {10001,35},
+                }
+                for _,case in ipairs(cases) do
+                    emit("healthStepCount",case[1]*256)
+                    local selected = _testSelect()
+                    if case[2] then check(selected == case[2], "inclusive step threshold " .. case[1])
+                    else check(selected >= 13 and selected <= 31, "below 500 uses daily dialogue") end
+                end
+                emit("healthStepCount",0)
+                math.random = random
+            ''')
         runtime.execute('''
             local random = math.random
             math.random = function(a,b) return a end

@@ -1,0 +1,100 @@
+{
+  "band9": {
+    "width": 192,
+    "height": 490,
+    "deviceType": 366,
+    "assets": "band9",
+    "fontSize": 16,
+    "touchMaxY": 225,
+    "timeY": 294,
+    "dateY": 364,
+    "talkTimeY": 267,
+    "talkDateY": 335,
+    "imageText": false,
+    "fonts": [
+      "MiSans-Demibold",
+      "misansw_demibold",
+      "MiSans-Medium"
+    ]
+  },
+  "band10": {
+    "width": 212,
+    "height": 520,
+    "deviceType": 466,
+    "assets": "band10",
+    "fontSize": 16,
+    "touchMaxY": 225,
+    "timeY": 309,
+    "dateY": 377,
+    "talkTimeY": 282,
+    "talkDateY": 350,
+    "imageText": false,
+    "fonts": [
+      "MiSans-Demibold",
+      "misansw_demibold",
+      "MiSans-Medium"
+    ]
+  },
+  "band8pro": {
+    "width": 336,
+    "height": 480,
+    "deviceType": 11,
+    "assets": "band8pro",
+    "fontSize": 16,
+    "touchMaxY": 225,
+    "timeY": 297,
+    "dateY": 365,
+    "talkTimeY": 245,
+    "talkDateY": 313,
+    "imageText": true,
+    "fonts": [
+      "MiSans-Demibold",
+      "misansw_demibold",
+      "MiSans-Medium"
+    ]
+  },
+  "band9pro": {
+    "width": 336,
+    "height": 480,
+    "deviceType": 367,
+    "assets": "band9pro",
+    "fontSize": 16,
+    "touchMaxY": 225,
+    "timeY": 297,
+    "dateY": 365,
+    "talkTimeY": 245,
+    "talkDateY": 313,
+    "imageText": false,
+    "fonts": [
+      "MiSans-Demibold",
+      "misansw_demibold",
+      "MiSans-Medium"
+    ]
+  },
+  "redmiwatch6": {
+    "width": 432,
+    "height": 514,
+    "deviceType": 565,
+    "assets": "redmiwatch6",
+    "fontSize": 20,
+    "touchMaxY": 225,
+    "timeY": 300,
+    "dateY": 396,
+    "talkTimeY": 234,
+    "talkDateY": 330,
+    "imageText": false,
+    "fonts": [
+      "MiSans-Medium",
+      "misansw_Medium",
+      "MiSans-Demibold",
+      "misansw_demibold"
+    ]
+  },
+  "band10pro": {
+    "extends": "band9pro",
+    "deviceType": 567
+  },
+  "band11": {
+    "packageAlias": "band10"
+  }
+}

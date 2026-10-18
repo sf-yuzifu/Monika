@@ -139,6 +139,12 @@ local printf = DEBUG_ENABLE and print or function(...)
 end
 
 function imgPath(src)
+    if src:match("^%d%.bin$") or src:match("^num.*%.bin$") or
+        src == "ap.bin" or src == "mon.bin" or src == "tue.bin" or
+        src == "wed.bin" or src == "thu.bin" or src == "fri.bin" or
+        src == "sat.bin" or src == "sun.bin" then
+        src = src:gsub("%.bin$", ".png")
+    end
     return fsRoot .. src
 end
 

@@ -28,7 +28,7 @@ local function uiCreate()
             text = DEVICE.imageText and 21 or 41
             current_time = now
             elapsed = 0
-        elseif MONIKA_STATE == 2 and elapsed >= 3000 then
+        elseif MONIKA_STATE == 2 and elapsed >= dialogueDuration(text) then
             MONIKA_STATE = 1
             current_time = now
             elapsed = 0

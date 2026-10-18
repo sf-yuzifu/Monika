@@ -47,6 +47,7 @@
     "talkTimeY": 245,
     "talkDateY": 313,
     "imageText": true,
+    "dialogueDurations": [4200, 4200, 4200, 4200, 3600, 3600, 4200, 4000, 4400, 4600, 4800, 4000, 3600, 4400, 3700, 4000, 3600, 4000, 4000, 3800, 3800],
     "fonts": [
       "MiSans-Demibold",
       "misansw_demibold",

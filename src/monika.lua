@@ -83,6 +83,16 @@ local totalText = {
 
 local text = 1
 
+local function dialogueDuration(index)
+    if DEVICE.imageText then
+        return DEVICE.dialogueDurations[index]
+    end
+    local message = string.format(totalText[index], heart)
+    -- Count UTF-8 leading bytes, without requiring the optional utf8 library.
+    local _, count = message:gsub("[^\128-\191]", "")
+    return math.max(3000, math.min(8000, 1500 + count * 180))
+end
+
 local getTime = function()
     local time = tonumber(os.date("%H"))
     if time < 6 or time > 17 then

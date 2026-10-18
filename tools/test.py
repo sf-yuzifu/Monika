@@ -97,7 +97,33 @@ def main():
                 assert generated.read_bytes() == data, (name, resource)
         runtime = LuaRuntime(unpack_returned_tuples=True)
         runtime.execute(MOCK)
-        runtime.execute(source)
+        runtime.execute(source + "\n_testDuration = dialogueDuration\n_testMessages = totalText")
+        duration = runtime.globals()._testDuration
+        if config["imageText"]:
+            assert len(config["dialogueDurations"]) == 21
+            for index, expected in enumerate(config["dialogueDurations"], 1):
+                assert 3000 <= expected <= 8000
+                assert duration(index) == expected
+        else:
+            messages = runtime.globals()._testMessages
+            for index in [1, 13, 15, 22, 31, 41]:
+                expected = max(3000, min(8000, 1500 + len(messages[index]) * 180))
+                assert duration(index) == expected, (name, index)
+        runtime.execute('''
+            local random = math.random
+            math.random = function(a,b) return a end
+            click(1); advance(100)
+            local index = 13
+            -- The initial greeting has its own history; first tap selects daily entry 13.
+            local duration = _testDuration(index)
+            advance((duration // 100 - 2) * 100)
+            check(not clicks[2].obj.flags[lvgl.FLAG.HIDDEN], "dialogue remains before reading deadline")
+            advance(200)
+            check(clicks[2].obj.flags[lvgl.FLAG.HIDDEN], "dialogue closes at reading deadline")
+            click(1); advance(100); click(2); advance(100)
+            check(clicks[2].obj.flags[lvgl.FLAG.HIDDEN], "long dialogue can be dismissed early")
+            math.random = random
+        ''')
         runtime.execute('''
             local random, date = math.random, os.date
             math.random = function(a,b) return a end
@@ -176,7 +202,7 @@ def main():
             for _,battery in ipairs({0,9,10,99,100}) do emit("systemStatusBattery",battery*256) end
             emit("dateMonth",12*256); emit("dateDay",31*256); emit("dateWeek",6*256)
             emit("healthStepCount",11000*256); emit("healthHeartRate",120*256)
-            advance(3100)
+            advance(8100)
             check(clicks[2].obj.flags[lvgl.FLAG.HIDDEN], "greeting expires")
             click(1)
             advance(100)
@@ -200,7 +226,7 @@ def main():
             check(background == "assets/scare.bin" or background == "assets/scare.png", "rare tap shows scare")
             advance(1100)
             check(not clicks[2].obj.flags[lvgl.FLAG.HIDDEN], "scare returns to dialogue")
-            advance(3100)
+            advance(8100)
             check(clicks[2].obj.flags[lvgl.FLAG.HIDDEN], "scare dialogue expires")
         ''')
         assert bool(runtime.eval('subscriptions.healthHeartRate ~= nil')) != config["imageText"]

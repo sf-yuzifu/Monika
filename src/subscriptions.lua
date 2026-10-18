@@ -26,6 +26,7 @@ local function subscribeData(dataman, watchface)
     if not DEVICE.imageText then
         dataman.subscribe("healthHeartRate", watchface.objImage, function(obj, value)
             heart = value // 256
+            heartUpdatedAt = os.time()
         end)
         dataman.subscribe("healthStepCount", watchface.objImage, function(obj, value)
             step = value // 256

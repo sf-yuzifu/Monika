@@ -7,6 +7,7 @@ from config import ROOT, load_devices
 
 MOCK = r'''
 now = 0
+os.time = function() return 1800000000 + now // 1000 end
 SCRIPT_PATH = "assets/"
 subscriptions = {}
 timers = {}
@@ -52,6 +53,7 @@ function emit(key,value)
     if sub then sub.cb(sub.obj,value) end
 end
 function advance(ms)
+    now = now + ms
     for _,timer in ipairs(timers) do
         if not timer.paused then
             for i=1,ms // timer.period do timer.cb() end
@@ -96,6 +98,41 @@ def main():
         runtime = LuaRuntime(unpack_returned_tuples=True)
         runtime.execute(MOCK)
         runtime.execute(source)
+        if not config["imageText"]:
+            runtime.execute('''
+                local random = math.random
+                math.random = function(a,b) if b == 21 then return 7 else return a end end
+                local function message()
+                    for _,child in ipairs(clicks[2].obj.children) do
+                        if child.text ~= nil then return child.text end
+                    end
+                end
+                emit("healthStepCount",11000*256)
+                click(1); advance(100)
+                check(not message():find("心率"), "missing heart must not select heart dialogue")
+                emit("healthHeartRate",120*256)
+                click(1); advance(100)
+                check(message():find("120"), "valid heart selects heart dialogue")
+                emit("healthHeartRate",125*256); advance(100)
+                check(message():find("125"), "visible heart dialogue refreshes")
+                for _,invalid in ipairs({0,-256,2147483647,250*256}) do
+                    emit("healthHeartRate",invalid); advance(100)
+                    check(not message():find("心率"), "invalid heart replaces visible dialogue")
+                    click(1); advance(100)
+                    check(not message():find("心率"), "invalid heart cannot be selected")
+                    emit("healthHeartRate",120*256); click(1); advance(100)
+                end
+                ScreenStateChangedCB("ON","OFF","test")
+                advance(300000)
+                ScreenStateChangedCB("OFF","ON","test")
+                check(not message():find("心率"), "heart expires while screen is off")
+                click(1); advance(100)
+                check(not message():find("心率"), "expired heart cannot be selected")
+                emit("healthHeartRate",100*256); click(1); advance(100)
+                check(message():find("100"), "fresh measurement restores heart dialogue")
+                emit("healthHeartRate",0)
+                math.random = random
+            ''')
         runtime.execute('''
             check(#timers == 1, "one animation timer")
             check(lvgl.tick_get == nil, "regression: firmware without tick_get")

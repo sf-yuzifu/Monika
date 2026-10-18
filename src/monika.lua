@@ -6,7 +6,18 @@ local MONIKA_STATE = 1
 -- Some firmwares (including Band 9 Pro) do not expose lvgl.tick_get.
 local animationTime = 0
 local current_time = 0
-local step, heart = 0, 0
+local step = 0
+local heart, heartUpdatedAt
+local HEART_MAX_AGE = 5 * 60 -- Seconds, including time spent with the screen off.
+local function validHeart()
+    if heart ~= nil then
+        local age = os.time() - heartUpdatedAt
+        if age < 0 or age >= HEART_MAX_AGE then
+            heart, heartUpdatedAt = nil, nil
+        end
+    end
+    return heart
+end
 -- DEVICE and PNG_ASSETS are embedded by tools/build.py.
 local function imgPath(name) return fsRoot .. (PNG_ASSETS[name] or name) end
 local cachedFont
@@ -98,6 +109,7 @@ local heart_calc = function()
 end
 
 local return_text = function(i)
+    local heart = validHeart()
     if DEVICE.imageText then
         if i == "night" then return math.random(9, 12)
         elseif i == "morning" then return math.random(1, 4)
@@ -106,7 +118,7 @@ local return_text = function(i)
             current_time = animationTime; MONIKA_STATE = 3; return 21
         else return math.random(13, 20) end
     end
-    if heart > 94 and heart < 250 and i ~= nil then
+    if heart ~= nil and heart > 94 and i ~= nil then
         return heart_calc()
     elseif i == "night" then
         return math.random(9, 12)
@@ -128,7 +140,7 @@ local return_text = function(i)
             else
                 return 32
             end
-        elseif c == 7 and heart < 250 then
+        elseif c == 7 and heart ~= nil then
             return heart_calc()
         elseif math.random(1, 1000) == 2 then
             current_time = animationTime

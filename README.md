@@ -85,7 +85,7 @@ requirements.txt        回归使用的 Python 依赖
 
 - 共用 PNG 位于 `assets/common/`。
 - RW6 专用 PNG 直接位于 `devices/redmiwatch6/`，包含人物背景、表情、对话框和大尺寸数字。
-- 其他设备没有 PNG 原图的背景、表情及对话框保留 BIN；手环 8 Pro 图片文字位于 `devices/band8pro/text/`。
+- 手环 9、10、8 Pro、9 Pro 的背景、表情和对话框均已导入 PNG 原图；手环 11、10 Pro 复用对应配置。仅手环 8 Pro 的图片文字仍使用 BIN，位于 `devices/band8pro/text/`。
 - 选择优先级为设备专用 PNG → 共用 PNG → 设备 BIN。构建自动映射动态资源路径，只打包实际选用的文件，PNG 在 EasyFace 编译阶段转换。
 - 补充 PNG 后，可执行 `python tools/clean_assets.py` 清除被替代的 BIN，再重新构建。
 

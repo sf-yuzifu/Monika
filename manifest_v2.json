@@ -1,0 +1,159 @@
+{
+  "item": {
+    "name": "【可互动】心跳文学部 莫妮卡",
+    "description": "把《心跳文学部》的莫妮卡带在身边。\n\n轻触头部，她会微笑着与你聊天；亮屏时有分时段问候，并结合步数、心率、电量与固定公历节日选择情景对话。支持自然眨眼、自动日夜主题，以及可通过底部电量区域开关的惊吓彩蛋。\n\n包含原生 AOD：黑底白色轮廓，仅显示时间、日期和星期。是否启用及实际效果取决于设备设置和固件。\n\n本条目仅提供互动版。手环11复用手环10包；S5 41mm使用独立包。各型号兼容性以实测为准。",
+    "preview": [
+      "images/preview.png",
+      "images/band.png",
+      "images/pro.png",
+      "images/rw.png",
+      "images/s.png"
+    ],
+    "icon": "icon.png",
+    "id": "979825266001",
+    "restype": "watchface",
+    "cover": "images/preview.png",
+    "author": [
+      {
+        "name": "sf-yuzifu",
+        "bindABAccount": true
+      }
+    ]
+  },
+  "links": [
+    {
+      "icon": "github-logo",
+      "title": "GitHub",
+      "url": "https://github.com/sf-yuzifu/Monika"
+    },
+    {
+      "icon": "house-line",
+      "title": "个人主页",
+      "url": "https://yzf.moe"
+    }
+  ],
+  "downloads": {
+    "xmb9": {
+      "version": "6",
+      "versionCode": 6,
+      "file_name": "release/monika-band9.bin",
+      "updatelogs": [
+        {
+          "version": "6",
+          "content": "统一多设备互动表盘；扩充对话、健康与节日联动；支持电量区域彩蛋开关；新增圆屏布局和原生 AOD。"
+        }
+      ]
+    },
+    "xmb9p": {
+      "version": "6",
+      "versionCode": 6,
+      "file_name": "release/monika-band9pro.bin",
+      "updatelogs": [
+        {
+          "version": "6",
+          "content": "统一多设备互动表盘；扩充对话、健康与节日联动；支持电量区域彩蛋开关；新增圆屏布局和原生 AOD。"
+        }
+      ]
+    },
+    "xmb10": {
+      "version": "6",
+      "versionCode": 6,
+      "file_name": "release/monika-band10.bin",
+      "updatelogs": [
+        {
+          "version": "6",
+          "content": "统一多设备互动表盘；扩充对话、健康与节日联动；支持电量区域彩蛋开关；新增圆屏布局和原生 AOD。"
+        }
+      ]
+    },
+    "xmb10nfc": {
+      "version": "6",
+      "versionCode": 6,
+      "file_name": "release/monika-band10.bin",
+      "updatelogs": [
+        {
+          "version": "6",
+          "content": "统一多设备互动表盘；扩充对话、健康与节日联动；支持电量区域彩蛋开关；新增圆屏布局和原生 AOD。"
+        }
+      ]
+    },
+    "xmb10p": {
+      "version": "6",
+      "versionCode": 6,
+      "file_name": "release/monika-band10pro.bin",
+      "updatelogs": [
+        {
+          "version": "6",
+          "content": "统一多设备互动表盘；扩充对话、健康与节日联动；支持电量区域彩蛋开关；新增圆屏布局和原生 AOD。"
+        }
+      ]
+    },
+    "xmb11": {
+      "version": "6",
+      "versionCode": 6,
+      "file_name": "release/monika-band11.bin",
+      "updatelogs": [
+        {
+          "version": "6",
+          "content": "统一多设备互动表盘；扩充对话、健康与节日联动；支持电量区域彩蛋开关；新增圆屏布局和原生 AOD。"
+        }
+      ]
+    },
+    "xmb11nfc": {
+      "version": "6",
+      "versionCode": 6,
+      "file_name": "release/monika-band11.bin",
+      "updatelogs": [
+        {
+          "version": "6",
+          "content": "统一多设备互动表盘；扩充对话、健康与节日联动；支持电量区域彩蛋开关；新增圆屏布局和原生 AOD。"
+        }
+      ]
+    },
+    "xmrw6": {
+      "version": "6",
+      "versionCode": 6,
+      "file_name": "release/monika-redmiwatch6.bin",
+      "updatelogs": [
+        {
+          "version": "6",
+          "content": "统一多设备互动表盘；扩充对话、健康与节日联动；支持电量区域彩蛋开关；新增圆屏布局和原生 AOD。"
+        }
+      ]
+    },
+    "xmws4": {
+      "version": "6",
+      "versionCode": 6,
+      "file_name": "release/monika-s4.bin",
+      "updatelogs": [
+        {
+          "version": "6",
+          "content": "统一多设备互动表盘；扩充对话、健康与节日联动；支持电量区域彩蛋开关；新增圆屏布局和原生 AOD。"
+        }
+      ]
+    },
+    "xmws5": {
+      "version": "6",
+      "versionCode": 6,
+      "file_name": "release/monika-s5_46.bin",
+      "updatelogs": [
+        {
+          "version": "6",
+          "content": "统一多设备互动表盘；扩充对话、健康与节日联动；支持电量区域彩蛋开关；新增圆屏布局和原生 AOD。"
+        }
+      ]
+    },
+    "xmws541": {
+      "version": "6",
+      "versionCode": 6,
+      "file_name": "release/monika-s5_41.bin",
+      "updatelogs": [
+        {
+          "version": "6",
+          "content": "统一多设备互动表盘；扩充对话、健康与节日联动；支持电量区域彩蛋开关；新增圆屏布局和原生 AOD。"
+        }
+      ]
+    }
+  },
+  "ext": {}
+}

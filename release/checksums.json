@@ -1,0 +1,52 @@
+{
+  "band9": {
+    "version": 6,
+    "size": 756860,
+    "sha256": "18884acfe05d0abe05df21759d53bbea6d7e9dee84d775c7b588bf0a5f20af62"
+  },
+  "band9pro": {
+    "version": 6,
+    "size": 1209416,
+    "sha256": "e5691d606bc354d05eb7f73fa47a4961d6fc8b7c0bedca5bc179ec384d9ea58b"
+  },
+  "band10": {
+    "version": 6,
+    "size": 862424,
+    "sha256": "2d66ba489c31770bef3f15f5f7f168bba8e39f01fedaa33db67711691cd30242"
+  },
+  "band10pro": {
+    "version": 6,
+    "size": 1329224,
+    "sha256": "cd45e8eeb458c8d2a682b7586949a8af222d0ab2d32be74cac75705391c4a7ae"
+  },
+  "band11": {
+    "version": 6,
+    "size": 862424,
+    "sha256": "2d66ba489c31770bef3f15f5f7f168bba8e39f01fedaa33db67711691cd30242"
+  },
+  "redmiwatch6": {
+    "version": 6,
+    "size": 2020936,
+    "sha256": "10617720a665dc8e8ac0f1719bddb296592aaf09a5a8d6d2810c05cf48b3a817"
+  },
+  "s4": {
+    "version": 6,
+    "size": 1942364,
+    "sha256": "ab8d378f84c1e26220e04a129448aad77c7461055c67360664d4c076d4408d10"
+  },
+  "s5_46": {
+    "version": 6,
+    "size": 2259392,
+    "sha256": "b29ac99ad0a61057aa407f218f907fe3e4b856f9df7a1c71a9a897e516d037bd"
+  },
+  "band8pro": {
+    "version": 6,
+    "size": 2260056,
+    "sha256": "aa18ae149dff7b13026986ec80ec5d392b4bffcf9c2105f6f53c27564f506d65"
+  },
+  "s5_41": {
+    "version": 6,
+    "size": 1987912,
+    "sha256": "3c48b54954e76767cb8afdd61dcdd947b28abe9027f81a15df552748e5dc48f7"
+  }
+}

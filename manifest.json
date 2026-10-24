@@ -1,0 +1,63 @@
+{
+  "item": {
+    "name": "【可互动】心跳文学部 莫妮卡",
+    "description": "把《心跳文学部》的莫妮卡带在身边。\n\n轻触头部，她会微笑着与你聊天；亮屏时有分时段问候，并结合步数、心率、电量与固定公历节日选择情景对话。支持自然眨眼、自动日夜主题，以及可通过底部电量区域开关的惊吓彩蛋。\n\n包含原生 AOD：黑底白色轮廓，仅显示时间、日期和星期。是否启用及实际效果取决于设备设置和固件。\n\n本条目仅提供互动版。手环11复用手环10包；S5 41mm使用独立包。各型号兼容性以实测为准。",
+    "preview": [
+      "images/preview.png",
+      "images/band.png",
+      "images/pro.png",
+      "images/rw.png",
+      "images/s.png"
+    ],
+    "icon": "icon.png",
+    "source_url": "https://github.com/sf-yuzifu/Monika",
+    "author": [
+      {
+        "name": "小鱼yuzifu",
+        "author_url": "https://yzf.moe"
+      }
+    ]
+  },
+  "downloads": {
+    "n66": {
+      "version": "6",
+      "file_name": "release/monika-band9.bin"
+    },
+    "n67": {
+      "version": "6",
+      "file_name": "release/monika-band9pro.bin"
+    },
+    "o66": {
+      "version": "6",
+      "file_name": "release/monika-band10.bin"
+    },
+    "o66nfc": {
+      "version": "6",
+      "file_name": "release/monika-band10.bin"
+    },
+    "p67": {
+      "version": "6",
+      "file_name": "release/monika-band10pro.bin"
+    },
+    "q66cn": {
+      "version": "6",
+      "file_name": "release/monika-band11.bin"
+    },
+    "q66nfc": {
+      "version": "6",
+      "file_name": "release/monika-band11.bin"
+    },
+    "p65": {
+      "version": "6",
+      "file_name": "release/monika-redmiwatch6.bin"
+    },
+    "o62": {
+      "version": "6",
+      "file_name": "release/monika-s4.bin"
+    },
+    "p62": {
+      "version": "6",
+      "file_name": "release/monika-s5_46.bin"
+    }
+  }
+}

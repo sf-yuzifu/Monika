@@ -114,6 +114,19 @@ python tools/test_static.py
 
 ## 📂 代码目录说明
 
+### AstroBox 发布文件
+
+根目录的 `manifest.json`、`manifest_v2.json` 和 `icon.png` 用于 AstroBox 展示与下载。正式发布只提供互动版（含 AOD）；静态版仅保留自行构建能力。
+
+编译并测试后，运行以下命令整理发布文件：
+
+```powershell
+python tools/release.py
+python tools/release.py --check
+```
+
+安装包放在 `release/`，版本自动读取包头；预览使用 `images/` 中的五张海报。脚本不提交或推送 Git。型号映射、验证范围及 main 分支整合注意事项见 [AstroBox 发布说明](docs/astrobox-release.md)。
+
 ```text
 Monika/
 ├── assets/

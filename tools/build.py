@@ -10,6 +10,7 @@ from pathlib import Path
 from PIL import Image
 
 from config import ROOT, load_devices
+from previews import generate as generate_previews
 
 
 def lua(value):
@@ -93,6 +94,7 @@ def main():
         if (output / "app").exists():
             shutil.rmtree(output / "app")
         app.mkdir(parents=True, exist_ok=True)
+        generate_previews(config, assets, output / "previews")
         (output / "images").mkdir(exist_ok=True)
         (output / "output").mkdir(exist_ok=True)
         for relative, asset in assets.items():

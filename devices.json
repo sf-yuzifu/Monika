@@ -1,5 +1,6 @@
 {
   "band9": {
+    "previewShape": "capsule",
     "width": 192,
     "height": 490,
     "deviceType": 366,
@@ -167,6 +168,7 @@
     }
   },
   "band10": {
+    "previewShape": "capsule",
     "width": 212,
     "height": 520,
     "deviceType": 466,
@@ -333,6 +335,7 @@
     }
   },
   "band8pro": {
+    "previewShape": 48,
     "width": 336,
     "height": 480,
     "deviceType": 11,
@@ -595,6 +598,7 @@
     }
   },
   "band9pro": {
+    "previewShape": 48,
     "previewSize": [
       230,
       328
@@ -766,6 +770,7 @@
     }
   },
   "redmiwatch6": {
+    "previewShape": 104,
     "width": 432,
     "height": 514,
     "deviceType": 565,

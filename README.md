@@ -48,9 +48,9 @@ S5 41mm 继承 S4 的 466×466 素材和布局，使用独立 S5 包；S4 编译
 
 ### 原生 AOD
 
-构建同时生成 `build/<目标>/AOD/monika.fprj` 和对应图片，EasyFace 自动将其合入主安装包。AOD 只使用原生图片、数字及星期控件，不使用 Lua，无背景人物、动画或互动；保留时间、日期、星期和电量。素材来自 `assets/aod/common/`、`assets/aod/large/`，电量图标使用自动生成的白色轮廓。
+构建同时生成 `build/<目标>/AOD/monika.fprj` 和对应图片，EasyFace 自动将其合入主安装包。AOD 只使用原生图片、数字及星期控件，不使用 Lua，无背景人物、动画或互动；仅显示时间、日期和星期，不显示电量数字、百分号及电量图标。素材来自 `assets/aod/common/`、`assets/aod/large/`。
 
-AOD 电量使用原生三位数字控件（自动隐藏前导零）和独立百分号。与 Lua 主屏的按位布局不同，其低于 100% 时的对齐、数字内部叠放及实际数据更新尚需真机确认。当前默认发布版本已提升为 **5**，下文旧版示例可通过 `--version` 覆盖。
+AOD 为避免不同设备原生电量控件的对齐差异，已移除电量显示。主屏电量及电量区域彩蛋开关保留。当前默认发布版本为 **6**。
 
 生成工程需要 Python 3.9+，编译安装包参考 **EasyFace 4.23**。在仓库根目录执行：
 
@@ -68,7 +68,7 @@ python tools/build.py --device redmiwatch6
 python tools/build.py --device band9 --compiler "<EasyFace目录>\Compiler.exe" --id 979825266001 --version 2
 ```
 
-生成工程位于 `build/<目标>/monika.fprj`，可通过 EasyFace 打开；成功编译的安装包位于 `dist/monika-<目标>.face`。默认表盘 ID 为 `979825266001`，发布版本为 `4`。编译脚本同步写入 Gen2 包头；`--id` / `--version` 可覆盖默认值。
+生成工程位于 `build/<目标>/monika.fprj`，可通过 EasyFace 打开；成功编译的安装包位于 `dist/monika-<目标>.face`。默认表盘 ID 为 `979825266001`，发布版本为 `6`。编译脚本同步写入 Gen2 包头；`--id` / `--version` 可覆盖默认值。
 
 `--device band11` 会生成 `band10` 工程，编译时同时输出 `monika-band10.face` 和 `monika-band11.face`。`build/`、`dist/` 均为忽略的构建产物，修改源码后重新生成。
 

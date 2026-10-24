@@ -2,7 +2,6 @@
 import shutil
 import xml.etree.ElementTree as ET
 from PIL import Image
-from aod_drafts import outline
 from config import ROOT
 
 
@@ -10,10 +9,12 @@ def generate(config, assets, output):
     folder = output / "AOD"
     images = folder / "images"
     images.mkdir(parents=True, exist_ok=True)
+    for filename in ("ap.png", "num%.png"):
+        (images / filename).unlink(missing_ok=True)
     family = "large" if config["assets"] in ("redmiwatch6", "s4", "s5_46") else "common"
     for path in (ROOT / "assets/aod" / family).glob("*.png"):
+        if path.name in ("ap.png", "num%.png"): continue
         shutil.copyfile(path, images / path.name)
-    outline(assets["ap.bin"]).save(images / "ap.png")
     # Use the approved AOD draft as the editor/compilation preview.
     # Rendering is performed by build.py once, outside this function.
     draft = ROOT / "build/aod-drafts" / config.get("packageAlias", config.get("target", config["assets"])) / "preview.png"
@@ -42,19 +43,10 @@ def generate(config, assets, output):
                "dateContChild1":1212,"dateContChild2":1112,"dateContChild4":1001912,"dateContChild5":1912}
     for group in config["layout"]["groups"]:
         name = group["name"]
-        if name == "msg": continue
+        if name in ("msg", "chargeCont"): continue
         x,y = group["x"], group["y"]
         if name == "time": y=config["timeY"]
         elif name == "dateCont": y=config["dateY"]
-        if name == "chargeCont":
-            # Native numeric widget handles leading blanking. Percent is behind digits.
-            positions=config["layout"]["battery"][2]
-            widget("batteryPercent",x+positions[4],y,bitmap="num%.png")
-            step=positions[2]-positions[1]
-            with Image.open(images/"num0.png") as im: width=im.width
-            widget("battery",x+positions[1],y,source=841,count=3,spacing=step-width)
-            widget("batteryIcon",x+positions[0],y+group["children"][0].get("y",0),bitmap="ap.png")
-            continue
         for child in group["children"]:
             field=child["name"]
             if field=="dateWeek":

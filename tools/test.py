@@ -149,7 +149,9 @@ def main():
                 for filename in filenames:
                     filename = filename.split(":",1)[-1]
                     assert (aod_path.parent / "images" / filename).is_file(), (name, filename)
-            assert {"1000911","911","1211","1111","1212","1112","1001912","1912","841"} <= bound_sources
+            assert {"1000911","911","1211","1111","1212","1112","1001912","1912"} <= bound_sources
+            assert "841" not in bound_sources
+            assert not any(e.get("Name", "").startswith("battery") for e in aod.findall("Screen/Widget"))
         source = source_for(config)
         selected = resources(config)
         packaged_names = {

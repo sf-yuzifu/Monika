@@ -85,7 +85,7 @@ def main():
     parser.add_argument("--device", choices=["all", *devices], default="all")
     parser.add_argument("--compiler", type=Path)
     parser.add_argument("--id", default="979825266001")
-    parser.add_argument("--version", type=int, default=5)
+    parser.add_argument("--version", type=int, default=6)
     args = parser.parse_args()
     generate_aod_drafts()
     if not re.fullmatch(r"(?:[0-9]{9}|[0-9]{12})", args.id) or not 0 <= args.version <= 0xFFFFFFFF:

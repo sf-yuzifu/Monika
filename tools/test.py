@@ -2,6 +2,7 @@
 from lupa.lua54 import LuaRuntime
 import xml.etree.ElementTree as ET
 import struct
+from PIL import Image
 from build import resources, source_for
 from config import ROOT, load_devices
 
@@ -27,30 +28,37 @@ end
 function methods:clear_flag(flag)
     writes[#writes+1]={obj=self,kind="flag"}; self.flags[flag] = nil
 end
-function methods:get_img_size() return 20,24 end
-function methods:get_child_cnt() return #self.children end
 function methods:get_child(i) return self.children[i+1] end
-function methods:get_parent() return self.parent end
 function methods:onevent(event, callback) clicks[#clicks+1] = {obj=self, cb=callback} end
-function methods:Anim(values) return {set=function() end} end
 local function object(parent, values)
     local result = setmetatable({flags={},children={},parent=parent}, {__index=methods})
     result:set(values or {})
     if parent then parent.children[#parent.children+1] = result end
     return result
 end
-function methods:Image(values) return object(self, values) end
+local function image(parent, values)
+    local result = object(parent, values)
+    result.w,result.h = imageSize(values.src)
+    return result
+end
+function methods:Image(values) return image(self, values) end
 function methods:Label(values) return object(self, values) end
 lvgl = {
-    Object=object, Image=object, SIZE_CONTENT=-1,
+    Object=object, Image=image, SIZE_CONTENT=-1,
     ALIGN={CENTER=0}, FLAG={SCROLLABLE=1,EVENT_BUBBLE=2,HIDDEN=3,CLICKABLE=4},
     EVENT={SHORT_CLICKED=1}, BUILTIN_FONT={MONTSERRAT_14=14},
     HOR_RES=function() return screenWidth end, VER_RES=function() return screenHeight end,
-    OPA=function(n) return n end, Font=function(name,size) return size end,
+    OPA=function(n) return n end,
+    Font=function(name,size)
+        fontAttempts[#fontAttempts+1]=name
+        if rejectedFonts[name] or rejectAllFonts then error("font unavailable: " .. name) end
+        return size
+    end,
     indev={get_act=function() return {get_point=function() return pointX,pointY end} end},
 }
 function lvgl.Timer(values)
     function values:set(opts)
+        assert(type(opts.period) == "number" and opts.period > 0, "positive timer period required")
         for k,v in pairs(opts) do self[k]=v end
         self.due=now+self.period
     end
@@ -102,7 +110,21 @@ function delayedCallback(delay)
     timer.cb()
 end
 function check(condition,message) assert(condition,message) end
+fontAttempts = {}
+rejectedFonts = {}
 '''
+
+
+def image_size(path):
+    data = path.read_bytes()
+    if data[:8] == b"\x89PNG\r\n\x1a\n":
+        with Image.open(path) as image:
+            image.load()  # Check actual PNG decoding, not only the header.
+            return image.size
+    header = struct.unpack("<I", data[:4])[0]
+    width, height = (header >> 10) & 2047, (header >> 21) & 2047
+    assert width > 0 and height > 0, (path, "invalid LVGL image dimensions")
+    return width, height
 
 
 def main():
@@ -121,6 +143,14 @@ def main():
             (resource.removesuffix(".bin") + ".png") if path.suffix == ".png" else resource
             for resource, path in selected.items()
         }
+        dimensions = {
+            resource.removesuffix(".bin") + ".png" if path.suffix == ".png" else resource: image_size(path)
+            for resource, path in selected.items()
+        }
+        assert dimensions["bg.png"] == (config["width"], config["height"])
+        assert dimensions["bg_n.png"] == dimensions["bg.png"]
+        for image in ["smile.png", "smile_n.png", "eye_close.png", "eye_close_n.png"]:
+            assert dimensions[image] == dimensions["eye_close.png"], (name, image)
         if project_path.exists():
             app = project_path.parent / "app/_lua/monika"
             generated_source = (app / "monika.lua").read_text(encoding="utf-8")
@@ -154,10 +184,36 @@ def main():
             assert filename in packaged_names, (name, "unpacked image", filename)
             used_images.add(filename)
         runtime.globals().validateImage = validate_image
+        runtime.globals().imageSize = lambda path: dimensions[path.removeprefix("assets/")]
         runtime.globals().screenWidth = config["width"]
         runtime.globals().screenHeight = config["height"]
         runtime.execute(MOCK)
         runtime.execute(source + "\n_testDuration = dialogueDuration\n_testCatalog = dialogues\n_testSelect = return_text\n_testCurrent = function() return dialogue end\n_testState = function() return MONIKA_STATE end\n_testRefresh = refreshUI\n_testValidHeart = validHeart")
+        runtime.execute('''
+            check(lvgl.tick_get == nil, "tick_get must remain unavailable")
+            check(clicks[1].obj.Anim == nil and clicks[1].obj.get_img_size == nil,
+                  "unused placeholder interfaces must remain absent")
+            local background=clicks[1].obj.children[1]
+            check(background.w == screenWidth and background.h == screenHeight, "real background dimensions")
+        ''')
+        if not config["imageText"]:
+            for failure_mode in ["first", "all"]:
+                probe = LuaRuntime(unpack_returned_tuples=True)
+                probe.globals().validateImage = validate_image
+                probe.globals().imageSize = lambda path: dimensions[path.removeprefix("assets/")]
+                probe.globals().screenWidth = config["width"]
+                probe.globals().screenHeight = config["height"]
+                probe.execute(MOCK)
+                if failure_mode == "first":
+                    probe.globals().rejectedFonts[config["fonts"][0]] = True
+                else:
+                    probe.globals().rejectAllFonts = True
+                probe.execute(source + "\n_testFont = textFont")
+                attempts = len(probe.globals().fontAttempts)
+                assert attempts == (2 if failure_mode == "first" else len(config["fonts"])), (name, failure_mode)
+                expected = config["fontSize"] if failure_mode == "first" else 14
+                assert probe.globals()._testFont() == expected
+                assert len(probe.globals().fontAttempts) == attempts, "font cache must prevent retries"
         if not config["imageText"]:
             runtime.execute('''
                 local random = math.random

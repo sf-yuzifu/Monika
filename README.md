@@ -73,6 +73,16 @@
 
 ### 常用命令
 
+不需要互动时，可加 `--static` 构建静态版：强制使用日间背景，不显示对话、不眨眼、不切换日夜，也没有点击开关；时间、日期、星期、电量仍实时更新，原生 AOD 保留。
+
+```powershell
+python tools/build.py --static
+python tools/build.py --static --device s4 --compiler "D:\EasyFace\Compiler.exe"
+python tools/test_static.py
+```
+
+静态版工程位于 `build/<目标>-static/monika.fprj`，安装包为 `dist/monika-<目标>-static.face`，不会覆盖互动版文件。两版默认使用同一个表盘 ID，设备安装时可能相互替换；需要共存时通过 `--id` 指定不同 ID。
+
 - **一键生成所有设备的 EasyFace 工程**：
   ```powershell
   python tools/build.py

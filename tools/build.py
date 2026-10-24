@@ -36,6 +36,9 @@ def source_for(config):
     mapping = {name: Path(name).with_suffix(".png").as_posix()
                for name, path in resources(config).items() if path.suffix == ".png"}
     resource_map = "local PNG_ASSETS = {" + ",".join(f"[{lua(key)}]={lua(value)}" for key, value in mapping.items()) + "}\n"
+    if config.get("static"):
+        runtime = (ROOT / "src/static.lua").read_text(encoding="utf-8")
+        dialogue = ""
     return "local DEVICE = " + lua(config) + "\n" + resource_map + "\n".join([common, dialogue, layout, subscriptions, runtime])
 
 
@@ -54,7 +57,9 @@ def resources(config):
     required.update(["bg.bin", "bg_n.bin", "eye_close.bin", "eye_close_n.bin", "smile.bin", "smile_n.bin",
                      "scare.bin", "msg.bin", "ap.bin", "num%.bin", "num_mao.bin", "num_gang.bin",
                      "sun.bin", "mon.bin", "tue.bin", "wed.bin", "thu.bin", "fri.bin", "sat.bin"])
-    if config["imageText"]:
+    if config.get("static"):
+        required.difference_update(["bg_n.bin", "eye_close.bin", "eye_close_n.bin", "smile.bin", "smile_n.bin", "scare.bin", "msg.bin"])
+    elif config["imageText"]:
         for entries in config["imageDialogues"].values():
             if isinstance(entries, dict):
                 required.update(entry["image"] for entry in entries.values())
@@ -84,14 +89,18 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--device", choices=["all", *devices], default="all")
     parser.add_argument("--compiler", type=Path)
+    parser.add_argument("--static", action="store_true", help="Daylight-only face without dialogue, blinking or interactions")
     parser.add_argument("--id", default="979825266001")
     parser.add_argument("--version", type=int, default=6)
     args = parser.parse_args()
+    suffix = "-static" if args.static else ""
     generate_aod_drafts()
     if not re.fullmatch(r"(?:[0-9]{9}|[0-9]{12})", args.id) or not 0 <= args.version <= 0xFFFFFFFF:
         parser.error("ID must be 9 or 12 ASCII digits; version must fit UInt32")
     selected = devices[args.device].get("packageAlias", args.device) if args.device != "all" else "all"
     targets = {name: config for name, config in devices.items() if not config.get("packageAlias") and selected in ("all", name)}
+    if args.static:
+        targets = {name: dict(config, static=True) for name, config in targets.items()}
     prepared = {}
     for name, config in targets.items():
         source = source_for(config)
@@ -103,7 +112,7 @@ def main():
             seen_previews.add(config["assets"])
     for name, config in targets.items():
         source, assets = prepared[name]
-        output = ROOT / "build" / name
+        output = ROOT / "build" / (name + suffix)
         app = output / "app/_lua/monika"
         if (output / "app").exists():
             shutil.rmtree(output / "app")
@@ -131,7 +140,7 @@ def main():
         if args.compiler:
             staging = output / "compiled"
             staging.mkdir(exist_ok=True)
-            fresh = staging / f"monika-{name}.face"
+            fresh = staging / f"monika-{name}{suffix}.face"
             fresh.unlink(missing_ok=True)
             subprocess.run([str(args.compiler.resolve()), "-b", str(path), str(staging), fresh.name, "252661004"], check=True)
             if not fresh.is_file():
@@ -142,7 +151,7 @@ def main():
             shutil.copyfile(fresh, dist / fresh.name)
             for alias, entry in devices.items():
                 if entry.get("packageAlias") == name:
-                    shutil.copyfile(fresh, dist / f"monika-{alias}.face")
+                    shutil.copyfile(fresh, dist / f"monika-{alias}{suffix}.face")
     for name, config in devices.items():
         if config.get("packageAlias") and selected in ("all", config["packageAlias"]):
             print(f"{name}: uses {config['packageAlias']} project/package")

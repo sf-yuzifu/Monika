@@ -79,6 +79,7 @@ local function createWatchface(parent)
     t.objImage = lvgl.Image(face, { x = 0, y = 0, src = imgPath("bg.bin") })
     propertyCache[t.objImage] = { src = imgPath("bg.bin") }
     for _, group in ipairs(layout.groups) do
+        if group.name == "msg" and DEVICE.static then return t end
         if group.name == "msg" then
             t.monikaEye = Image(face, imgPath("eye_close.bin"), { layout.eyeX, layout.eyeY })
             propertyCache[t.monikaEye.widget] = { src = imgPath("eye_close.bin") }

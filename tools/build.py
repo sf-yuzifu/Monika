@@ -11,6 +11,8 @@ from PIL import Image
 
 from config import ROOT, load_devices
 from previews import generate as generate_preview
+from aod import generate as generate_aod
+from aod_drafts import main as generate_aod_drafts
 
 
 def lua(value):
@@ -83,8 +85,9 @@ def main():
     parser.add_argument("--device", choices=["all", *devices], default="all")
     parser.add_argument("--compiler", type=Path)
     parser.add_argument("--id", default="979825266001")
-    parser.add_argument("--version", type=int, default=4)
+    parser.add_argument("--version", type=int, default=5)
     args = parser.parse_args()
+    generate_aod_drafts()
     if not re.fullmatch(r"(?:[0-9]{9}|[0-9]{12})", args.id) or not 0 <= args.version <= 0xFFFFFFFF:
         parser.error("ID must be 9 or 12 ASCII digits; version must fit UInt32")
     selected = devices[args.device].get("packageAlias", args.device) if args.device != "all" else "all"
@@ -123,6 +126,7 @@ def main():
                       Width=str(config["width"]), Height=str(config["height"]), Alpha="0", Visible_Src="0")
         path = output / "monika.fprj"
         ET.ElementTree(project).write(path, encoding="utf-16", xml_declaration=True)
+        generate_aod(dict(config, target=name), assets, output)
         print(f"{name}: {path}")
         if args.compiler:
             staging = output / "compiled"

@@ -138,6 +138,18 @@ def main():
             widget = project.find("Screen/Widget")
             assert int(project.getroot().get("DeviceType")) == config["deviceType"]
             assert (int(widget.get("Width")), int(widget.get("Height"))) == (config["width"], config["height"])
+            aod_path = project_path.parent / "AOD/monika.fprj"
+            aod = ET.parse(aod_path)
+            assert int(aod.getroot().get("DeviceType")) == config["deviceType"]
+            bound_sources = set()
+            for element in aod.findall("Screen/Widget"):
+                assert element.get("Shape") in ("30", "31", "32"), "AOD must use native widgets only"
+                if element.get("Value_Src"): bound_sources.add(element.get("Value_Src"))
+                filenames = [element.get("Bitmap")] if element.get("Bitmap") else element.get("BitmapList", "").split("|")
+                for filename in filenames:
+                    filename = filename.split(":",1)[-1]
+                    assert (aod_path.parent / "images" / filename).is_file(), (name, filename)
+            assert {"1000911","911","1211","1111","1212","1112","1001912","1912","841"} <= bound_sources
         source = source_for(config)
         selected = resources(config)
         packaged_names = {

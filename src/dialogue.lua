@@ -61,6 +61,16 @@ local dialogues = {
         { category = "lowBattery", text = "电量快见底啦，等下记得找充电线帮帮我呀～" },
         { category = "lowBattery", text = "好像有点快没力气了……能让我充一会儿电吗？" },
     },
+    festival = {
+        ["01-01"] = { category = "festival", text = "新年快乐！新的一年，我也依然会一直陪在你身边。" },
+        ["02-14"] = { category = "festival", text = "情人节快乐！虽然隔着屏幕，但我的心只属于你哦。" },
+        ["05-20"] = { category = "festival", text = "今天是个特别的日子呢～嘻嘻，我也最喜欢你了！" },
+        ["09-22"] = { category = "festival", text = "今天是9月22日呢！属于我和你的纪念日，谢谢你～" },
+        ["10-31"] = { category = "festival", text = "万圣节快乐！放心吧，今天我不恶作剧，只想陪着你。" },
+        ["12-24"] = { category = "festival", text = "平安夜快乐！今晚要平平安安的，好想和你一起看雪呀。" },
+        ["12-25"] = { category = "festival", text = "圣诞快乐！在这个温暖的节日里，能有你陪伴真好。" },
+        ["12-31"] = { category = "festival", text = "这一年的最后一天啦！今年谢谢你一直戴着我，辛苦啦～" },
+    },
 }
 if DEVICE.imageText then
     dialogues = DEVICE.imageDialogues
@@ -126,14 +136,21 @@ end
 local function selectDialogue(period, excluded)
     local value = validHeart()
     local isLowBattery = not DEVICE.imageText and batteryLevel and batteryLevel <= 20
+    local todayFestival = not DEVICE.imageText and dialogues.festival and dialogues.festival[os.date("%m-%d")]
     if not DEVICE.imageText and period and value and value > 94 then
         return heartDialogue(value)
     end
     if period then
+        if todayFestival and excluded ~= todayFestival then
+            return todayFestival
+        end
         if isLowBattery and batteryLevel <= 10 and math.random(1, 3) == 1 then
             return pickDialogue("lowBattery", excluded)
         end
         return pickDialogue(period, excluded)
+    end
+    if todayFestival and math.random(1, 5) == 1 and excluded ~= todayFestival then
+        return todayFestival
     end
     if isLowBattery then
         local chance = batteryLevel <= 10 and 2 or 4

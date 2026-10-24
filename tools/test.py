@@ -535,6 +535,34 @@ def main():
                 tap(face,100,100)
                 check(_testCurrent().category ~= "lowBattery", "restored battery returns to normal dialogue")
                 advance(8100)
+
+                -- Festival test
+                local dates = {
+                    {"01-01", "新年快乐"},
+                    {"02-14", "情人节快乐"},
+                    {"05-20", "520"},
+                    {"09-22", "9月22日"},
+                    {"10-31", "万圣节快乐"},
+                    {"12-24", "平安夜快乐"},
+                    {"12-25", "圣诞快乐"},
+                    {"12-31", "最后一天"},
+                }
+                for _,item in ipairs(dates) do
+                    os.date = function(fmt) if fmt == "%m-%d" then return item[1] else return "8" end end
+                    wake()
+                    check(_testCurrent().category == "festival", "festival triggered on wake for " .. item[1])
+                    advance(8100)
+                    -- Head tap on festival day has 20% chance
+                    math.random=function(a,b) if b==5 then return 1 else return a end end
+                    tap(face,100,100)
+                    check(_testCurrent().category == "festival", "festival triggered on tap for " .. item[1])
+                    advance(8100)
+                end
+                -- Non-festival day
+                os.date = function(fmt) if fmt == "%m-%d" then return "07-15" else return "8" end end
+                wake()
+                check(_testCurrent().category == "morning", "non-festival day uses normal greeting")
+                advance(8100)
             end
 
             math.random,os.date=random,date

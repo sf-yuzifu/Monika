@@ -520,6 +520,18 @@
         {
           "image": "text/morning_4.png",
           "duration": 6360
+        },
+        {
+          "image": "text/morning_5.png",
+          "duration": 5460
+        },
+        {
+          "image": "text/morning_6.png",
+          "duration": 6000
+        },
+        {
+          "image": "text/morning_7.png",
+          "duration": 5460
         }
       ],
       "afternoon": [
@@ -538,6 +550,18 @@
         {
           "image": "text/afternoon_4.png",
           "duration": 6180
+        },
+        {
+          "image": "text/afternoon_5.png",
+          "duration": 6000
+        },
+        {
+          "image": "text/afternoon_6.png",
+          "duration": 6000
+        },
+        {
+          "image": "text/afternoon_7.png",
+          "duration": 5460
         }
       ],
       "night": [
@@ -556,6 +580,18 @@
         {
           "image": "text/night_4.png",
           "duration": 5820
+        },
+        {
+          "image": "text/night_5.png",
+          "duration": 5820
+        },
+        {
+          "image": "text/night_6.png",
+          "duration": 6360
+        },
+        {
+          "image": "text/night_7.png",
+          "duration": 5460
         }
       ],
       "daily": [
@@ -634,6 +670,46 @@
         {
           "image": "text/daily_19.png",
           "duration": 5640
+        },
+        {
+          "image": "text/daily_20.png",
+          "duration": 6000
+        },
+        {
+          "image": "text/daily_21.png",
+          "duration": 6180
+        },
+        {
+          "image": "text/daily_22.png",
+          "duration": 6000
+        },
+        {
+          "image": "text/daily_23.png",
+          "duration": 6540
+        },
+        {
+          "image": "text/daily_24.png",
+          "duration": 5460
+        },
+        {
+          "image": "text/daily_25.png",
+          "duration": 6360
+        },
+        {
+          "image": "text/daily_26.png",
+          "duration": 6180
+        },
+        {
+          "image": "text/daily_27.png",
+          "duration": 6180
+        },
+        {
+          "image": "text/daily_28.png",
+          "duration": 5820
+        },
+        {
+          "image": "text/daily_29.png",
+          "duration": 6180
         }
       ],
       "steps": [

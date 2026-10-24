@@ -258,7 +258,7 @@ def main():
         catalog = runtime.globals()._testCatalog
         if config["imageText"]:
             total = sum(len(v) if isinstance(v, list) else len(v) for v in config["imageDialogues"].values())
-            assert total == 55
+            assert total == 74
             for category, entries in config["imageDialogues"].items():
                 if isinstance(entries, dict):
                     for key, entry in entries.items():

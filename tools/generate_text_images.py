@@ -106,9 +106,8 @@ def render_dialogue(text, font, width=279, height=46):
     img = Image.new("RGBA", (width, height), (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)
     lines = wrap_text(text)
-    y_offset = 11 if len(lines) == 1 else 0
     for i, line in enumerate(lines):
-        draw.text((0, y_offset + i * 22), line, font=font, fill="#ffffff", stroke_width=1, stroke_fill="#000000")
+        draw.text((0, i * 22), line, font=font, fill="#ffffff", stroke_width=1, stroke_fill="#000000")
     return img
 
 

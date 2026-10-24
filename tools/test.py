@@ -7,7 +7,9 @@ from config import ROOT, load_devices
 
 MOCK = r'''
 now = 0
-os.time = function() return 1800000000 + now // 1000 end
+clockOffset = 0
+os.time = function() return 1800000000 + now // 1000 + clockOffset end
+pointX, pointY = 100, 100
 SCRIPT_PATH = "assets/"
 subscriptions = {}
 timers = {}
@@ -15,6 +17,7 @@ clicks = {}
 local methods = {}
 writes = {}
 function methods:set(values)
+    if values.src then validateImage(values.src) end
     writes[#writes+1]={obj=self,kind="set",values=values}
     for k,v in pairs(values) do self[k] = v end
 end
@@ -42,9 +45,9 @@ lvgl = {
     Object=object, Image=object, SIZE_CONTENT=-1,
     ALIGN={CENTER=0}, FLAG={SCROLLABLE=1,EVENT_BUBBLE=2,HIDDEN=3,CLICKABLE=4},
     EVENT={SHORT_CLICKED=1}, BUILTIN_FONT={MONTSERRAT_14=14},
-    HOR_RES=function() return 432 end, VER_RES=function() return 514 end,
+    HOR_RES=function() return screenWidth end, VER_RES=function() return screenHeight end,
     OPA=function(n) return n end, Font=function(name,size) return size end,
-    indev={get_act=function() return {get_point=function() return 100,100 end} end},
+    indev={get_act=function() return {get_point=function() return pointX,pointY end} end},
 }
 function lvgl.Timer(values)
     function values:set(opts)
@@ -80,6 +83,24 @@ function advance(ms)
     now=target
 end
 function click(i) clicks[i].cb(clicks[i].obj,1) end
+function tap(obj,x,y)
+    pointX,pointY=x,y
+    while obj do
+        for _,event in ipairs(clicks) do
+            if event.obj == obj then event.cb(obj,1) end
+        end
+        if not obj.flags[lvgl.FLAG.EVENT_BUBBLE] then break end
+        obj=obj.parent
+    end
+    pointX,pointY=100,100
+end
+function delayedCallback(delay)
+    local timer=timers[1]
+    check(not timer.paused, "timer must be active")
+    now=math.max(now,timer.due)+delay
+    timer.due=now+timer.period
+    timer.cb()
+end
 function check(condition,message) assert(condition,message) end
 '''
 
@@ -96,6 +117,17 @@ def main():
             assert (int(widget.get("Width")), int(widget.get("Height"))) == (config["width"], config["height"])
         source = source_for(config)
         selected = resources(config)
+        packaged_names = {
+            (resource.removesuffix(".bin") + ".png") if path.suffix == ".png" else resource
+            for resource, path in selected.items()
+        }
+        if project_path.exists():
+            app = project_path.parent / "app/_lua/monika"
+            generated_source = (app / "monika.lua").read_text(encoding="utf-8")
+            assert generated_source == source_for(devices[target]), f"{name}: stale project; run tools/build.py"
+            for resource, path in selected.items():
+                filename = resource.removesuffix(".bin") + ".png" if path.suffix == ".png" else resource
+                assert (app / filename).read_bytes() == path.read_bytes(), (name, filename)
         for resource, path in selected.items():
             if path.suffix != ".png":
                 continue
@@ -115,8 +147,17 @@ def main():
             if project_path.exists():
                 assert generated.read_bytes() == data, (name, resource)
         runtime = LuaRuntime(unpack_returned_tuples=True)
+        used_images = set()
+        def validate_image(path):
+            assert path.startswith("assets/"), (name, path)
+            filename = path.removeprefix("assets/")
+            assert filename in packaged_names, (name, "unpacked image", filename)
+            used_images.add(filename)
+        runtime.globals().validateImage = validate_image
+        runtime.globals().screenWidth = config["width"]
+        runtime.globals().screenHeight = config["height"]
         runtime.execute(MOCK)
-        runtime.execute(source + "\n_testDuration = dialogueDuration\n_testCatalog = dialogues\n_testSelect = return_text\n_testCurrent = function() return dialogue end")
+        runtime.execute(source + "\n_testDuration = dialogueDuration\n_testCatalog = dialogues\n_testSelect = return_text\n_testCurrent = function() return dialogue end\n_testState = function() return MONIKA_STATE end\n_testRefresh = refreshUI\n_testValidHeart = validHeart")
         if not config["imageText"]:
             runtime.execute('''
                 local random = math.random
@@ -218,7 +259,8 @@ def main():
             math.random, os.date = random, date
         ''')
         runtime.execute('''
-            local date = os.date
+            local date, random = os.date, math.random
+            math.random = function(a,b) return a end
             local hour = "8"
             os.date = function() return hour end
             ScreenStateChangedCB("ON","OFF","test")
@@ -230,6 +272,8 @@ def main():
             hour = "20"
             advance(60000)
             check(clicks[1].obj.children[1].src:find("bg_n"), "continuous screen updates night theme")
+            click(1)
+            advance(_testDuration(_testCurrent())); advance(7000)
             ScreenStateChangedCB("ON","OFF","test")
             local callbacks = timerCallbacks
             advance(60000)
@@ -237,7 +281,7 @@ def main():
             hour = "8"
             ScreenStateChangedCB("OFF","ON","test")
             check(not clicks[1].obj.children[1].src:find("bg_n"), "screen on refreshes theme immediately")
-            os.date = date
+            os.date, math.random = date, random
         ''')
         if not config["imageText"]:
             runtime.execute('''
@@ -313,8 +357,85 @@ def main():
             advance(8100)
             check(clicks[2].obj.flags[lvgl.FLAG.HIDDEN], "scare dialogue expires")
         ''')
+        runtime.execute('''
+            local random, date = math.random, os.date
+            os.date = function() return "8" end
+            math.random = function(a,b) return a end
+            local face, message = clicks[1].obj, clicks[2].obj
+            local function wake()
+                ScreenStateChangedCB("ON","OFF","test")
+                ScreenStateChangedCB("OFF","ON","test")
+            end
+            emit("healthHeartRate",0)
+            wake(); tap(message,screenWidth // 2,screenHeight-60)
+            check(_testState() == "idle", "dialogue tap at actual lower-screen coordinates dismisses")
+            tap(face,screenWidth // 2,screenHeight-30)
+            check(_testState() == "idle", "lower-screen tap does not trigger head dialogue")
+            -- Bubble from an image descendant through the face into the root.
+            face.children[1]:add_flag(lvgl.FLAG.EVENT_BUBBLE)
+            tap(face.children[1],screenWidth // 2,100)
+            check(_testState() == "talking", "descendant tap bubbles to head callback")
+            message:add_flag(lvgl.FLAG.EVENT_BUBBLE)
+            tap(message,screenWidth // 2,screenHeight-60)
+            check(_testState() == "idle", "dialogue bubbling does not reopen dialogue")
+
+            -- A late callback must recover and schedule a future positive deadline.
+            tap(face,100,100)
+            delayedCallback(5000)
+            check(_testState() == "idle", "late dialogue callback recovers")
+            check(timers[1].period > 0 and timers[1].due > now, "late callback reschedules forward")
+
+            for _,state in ipairs({"talking","blink","scare"}) do
+                wake()
+                if state == "blink" then
+                    advance(_testDuration(_testCurrent())); advance(7000)
+                    check(not face.children[5].flags[lvgl.FLAG.HIDDEN], "interrupt while eye is closed")
+                elseif state == "scare" then
+                    math.random=function(a,b) if b==1000 then return 2 elseif b==21 then return 1 else return a end end
+                    emit("healthStepCount",11000*256); tap(face,100,100)
+                    check(_testState() == "scare", "interrupt scare")
+                    math.random=function(a,b) return a end
+                else
+                    check(_testState() == "talking", "interrupt dialogue")
+                end
+                ScreenStateChangedCB("ON","OFF","test")
+                local count=timerCallbacks
+                advance(60000)
+                check(timerCallbacks == count, "interrupted state has no sleeping callbacks")
+                ScreenStateChangedCB("OFF","ON","test")
+                check(_testState() == "talking" and not message.flags[lvgl.FLAG.HIDDEN], "wake resets to greeting")
+                check(not face.children[2].flags[lvgl.FLAG.HIDDEN], "wake restores time after scare")
+            end
+            if subscriptions.healthHeartRate then
+                emit("healthHeartRate",120*256)
+                clockOffset=clockOffset-60
+                check(_testValidHeart() == nil, "clock rollback invalidates heart cache")
+                emit("healthHeartRate",120*256)
+                clockOffset=clockOffset+600
+                check(_testValidHeart() == nil, "clock forward expires heart cache")
+            end
+            tap(face,100,100)
+            check(timers[1].period > 0, "clock adjustment keeps valid deadline")
+            clockOffset=0
+            math.random,os.date=random,date
+        ''')
+        # Enumerate all dynamic digit/week/image-dialogue paths through real setters.
+        runtime.execute('''
+            for _,key in ipairs({"timeHourHigh","timeHourLow","timeMinuteHigh","timeMinuteLow"}) do
+                for value=0,9 do emit(key,value*256) end
+            end
+            for value=1,31 do emit("dateDay",value*256) end
+            for value=1,12 do emit("dateMonth",value*256) end
+            for value=0,6 do emit("dateWeek",value*256) end
+            for value=0,100 do emit("systemStatusBattery",value*256) end
+        ''')
+        for category, entries in catalog.items():
+            for _, entry in entries.items():
+                if entry.image:
+                    runtime.globals().validateImage("assets/" + entry.image)
         assert bool(runtime.eval('subscriptions.healthHeartRate ~= nil')) != config["imageText"]
-        print(f"PASS {name}: Lua 5.4, resources, data, clicks, timers, screen lifecycle")
+        assert packaged_names <= used_images, (name, "unexercised resource paths", packaged_names - used_images)
+        print(f"PASS {name}: Lua 5.4, {len(used_images)} resource paths, data, bubbling, delayed timers, screen lifecycle")
 
 
 if __name__ == "__main__":

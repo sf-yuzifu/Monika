@@ -105,6 +105,18 @@ local function scareDialogue()
     MONIKA_STATE = STATE.SCARE
     return dialogues.easterEgg[1]
 end
+local scareEnabled = DEVICE.enableScare ~= false
+local function toggleScareDialogue()
+    scareEnabled = not scareEnabled
+    if DEVICE.imageText then
+        local entry = dialogues.daily[3]
+        return { category = "toggle", image = entry.image, duration = entry.duration }
+    end
+    local text = scareEnabled and "恶作剧代码已恢复！做好心理准备哦，呵呵～"
+                               or "秘密开关被发现了呢！恶作剧代码已禁用～"
+    return { category = "toggle", text = text }
+end
+
 local function selectDialogue(period, excluded)
     local value = validHeart()
     if not DEVICE.imageText and period and value and value > 94 then
@@ -112,7 +124,7 @@ local function selectDialogue(period, excluded)
     end
     if period then return pickDialogue(period, excluded) end
     if DEVICE.imageText then
-        if math.random(1, 1000) == 2 then return scareDialogue() end
+        if scareEnabled and math.random(1, 1000) == 2 then return scareDialogue() end
     elseif step >= 500 then
         local choice = math.random(1, 21)
         if choice == 6 then
@@ -121,7 +133,7 @@ local function selectDialogue(period, excluded)
                 if step >= threshold then return dialogues.steps[#thresholds + 1 - i] end
             end
         elseif choice == 7 and value then return heartDialogue(value)
-        elseif math.random(1, 1000) == 2 then return scareDialogue() end
+        elseif scareEnabled and math.random(1, 1000) == 2 then return scareDialogue() end
     end
     return pickDialogue("daily", excluded)
 end

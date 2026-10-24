@@ -188,7 +188,7 @@ def main():
         runtime.globals().screenWidth = config["width"]
         runtime.globals().screenHeight = config["height"]
         runtime.execute(MOCK)
-        runtime.execute(source + "\n_testDuration = dialogueDuration\n_testCatalog = dialogues\n_testSelect = return_text\n_testCurrent = function() return dialogue end\n_testState = function() return MONIKA_STATE end\n_testRefresh = refreshUI\n_testValidHeart = validHeart")
+        runtime.execute(source + "\n_testDuration = dialogueDuration\n_testCatalog = dialogues\n_testSelect = return_text\n_testCurrent = function() return dialogue end\n_testState = function() return MONIKA_STATE end\n_testRefresh = refreshUI\n_testValidHeart = validHeart\n_testScareEnabled = function() return scareEnabled end")
         runtime.execute('''
             check(lvgl.tick_get == nil, "tick_get must remain unavailable")
             check(clicks[1].obj.Anim == nil and clicks[1].obj.get_img_size == nil,
@@ -423,16 +423,16 @@ def main():
                 ScreenStateChangedCB("OFF","ON","test")
             end
             emit("healthHeartRate",0)
-            wake(); tap(message,screenWidth // 2,screenHeight-60)
-            check(_testState() == "idle", "dialogue tap at actual lower-screen coordinates dismisses")
-            tap(face,screenWidth // 2,screenHeight-30)
-            check(_testState() == "idle", "lower-screen tap does not trigger head dialogue")
+            wake(); tap(message,screenWidth // 2,380)
+            check(_testState() == "idle", "dialogue tap at message box coordinates dismisses")
+            tap(face,screenWidth // 2,300)
+            check(_testState() == "idle", "mid-screen tap does not trigger head dialogue")
             -- Bubble from an image descendant through the face into the root.
             face.children[1]:add_flag(lvgl.FLAG.EVENT_BUBBLE)
             tap(face.children[1],screenWidth // 2,100)
             check(_testState() == "talking", "descendant tap bubbles to head callback")
             message:add_flag(lvgl.FLAG.EVENT_BUBBLE)
-            tap(message,screenWidth // 2,screenHeight-60)
+            tap(message,screenWidth // 2,380)
             check(_testState() == "idle", "dialogue bubbling does not reopen dialogue")
 
             -- A late callback must recover and schedule a future positive deadline.
@@ -470,9 +470,40 @@ def main():
                 clockOffset=clockOffset+600
                 check(_testValidHeart() == nil, "clock forward expires heart cache")
             end
+            clockOffset=0
             tap(face,100,100)
             check(timers[1].period > 0, "clock adjustment keeps valid deadline")
-            clockOffset=0
+            wake()
+
+            -- Battery tap toggle test
+            check(_testScareEnabled() == true, "scare enabled by default")
+            -- Tapping head multiple times does NOT toggle scare
+            for i=1,10 do
+                tap(face,100,100)
+                advance(50)
+            end
+            check(_testScareEnabled() == true, "tapping head never toggles scare")
+
+            -- Tap battery area to toggle scare off
+            tap(face,screenWidth // 2,screenHeight - 20)
+            check(_testScareEnabled() == false, "tapping battery toggles scare off")
+            check(_testCurrent().category == "toggle", "tapping battery shows toggle dialogue")
+            -- With scare disabled, 1/1000 chance does NOT trigger scare
+            math.random=function(a,b) if b==1000 then return 2 elseif b==21 then return 1 else return a end end
+            emit("healthStepCount",11000*256)
+            tap(face,100,100)
+            check(_testState() ~= "scare", "scare does not trigger when disabled")
+            advance(3000)
+
+            -- Tap battery area again to re-enable scare
+            tap(face,screenWidth // 2,screenHeight - 20)
+            check(_testScareEnabled() == true, "tapping battery re-enables scare")
+            advance(3000)
+            -- Now scare CAN trigger
+            tap(face,100,100)
+            check(_testState() == "scare", "scare triggers when re-enabled")
+            advance(1100); advance(8100)
+
             math.random,os.date=random,date
         ''')
         # Enumerate all dynamic digit/week/image-dialogue paths through real setters.

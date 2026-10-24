@@ -115,6 +115,12 @@ local function createWatchface(parent)
             dialogue = return_text()
             current_time = animationTime
             refreshUI()
+        elseif y >= DEVICE.touchBatteryMinY and MONIKA_STATE ~= STATE.SCARE then
+            syncAnimationTime()
+            MONIKA_STATE = STATE.TALKING
+            dialogue = toggleScareDialogue()
+            current_time = animationTime
+            refreshUI()
         end
     end)
     t.msg.widget:onevent(lvgl.EVENT.SHORT_CLICKED, function()

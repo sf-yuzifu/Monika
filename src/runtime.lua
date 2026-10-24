@@ -129,6 +129,7 @@ local function uiCreate()
         end)
     end
     dataman.subscribe("systemStatusBattery", watchface.chargeCont.widget, function(obj, value)
+        batteryLevel = value // 256
         updateBattery(watchface, obj, value)
     end)
     subscribeData(dataman, watchface)

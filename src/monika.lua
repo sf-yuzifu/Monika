@@ -8,6 +8,7 @@ local MONIKA_STATE = STATE.IDLE
 local animationTime = 0
 local current_time = 0
 local step = 0
+local batteryLevel = nil
 local heart, heartUpdatedAt
 local HEART_MAX_AGE = 5 * 60 -- Seconds, including time spent with the screen off.
 local function validHeart()

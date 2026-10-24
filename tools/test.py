@@ -504,6 +504,39 @@ def main():
             check(_testState() == "scare", "scare triggers when re-enabled")
             advance(1100); advance(8100)
 
+            -- Low battery dialogue test
+            if subscriptions.healthHeartRate then
+                emit("systemStatusBattery", 100*256)
+                tap(face,100,100)
+                check(_testCurrent().category ~= "lowBattery", "normal battery never triggers low battery dialogue")
+                advance(8100)
+
+                -- Battery at 15% (low battery, 1 in 4 chance)
+                emit("systemStatusBattery", 15*256)
+                math.random=function(a,b) if b==4 then return 1 else return a end end
+                tap(face,100,100)
+                check(_testCurrent().category == "lowBattery", "15% battery triggers low battery dialogue")
+                local firstLow = _testCurrent()
+                advance(8100)
+                tap(face,100,100)
+                check(_testCurrent().category == "lowBattery" and _testCurrent() ~= firstLow, "low battery excludes previous low battery dialogue")
+                advance(8100)
+
+                -- Battery at 5% (critical, 1 in 3 chance on screen wake)
+                emit("systemStatusBattery", 5*256)
+                math.random=function(a,b) if b==3 then return 1 else return a end end
+                wake()
+                check(_testCurrent().category == "lowBattery", "critical battery triggers on wake")
+                advance(8100)
+
+                -- Restored battery at 80%
+                emit("systemStatusBattery", 80*256)
+                math.random=function(a,b) return a end
+                tap(face,100,100)
+                check(_testCurrent().category ~= "lowBattery", "restored battery returns to normal dialogue")
+                advance(8100)
+            end
+
             math.random,os.date=random,date
         ''')
         # Enumerate all dynamic digit/week/image-dialogue paths through real setters.

@@ -55,6 +55,12 @@ local dialogues = {
     easterEgg = {
         { category = "easterEgg", text = "怎么样……刚才有吓到你吗？嘻嘻，抱歉啦～" },
     },
+    lowBattery = {
+        { category = "lowBattery", text = "电量有点低了呢，方便的话带我去充会儿电吧？" },
+        { category = "lowBattery", text = "还想多陪你一会儿……别忘了给我补充能量哦。" },
+        { category = "lowBattery", text = "电量快见底啦，等下记得找充电线帮帮我呀～" },
+        { category = "lowBattery", text = "好像有点快没力气了……能让我充一会儿电吗？" },
+    },
 }
 if DEVICE.imageText then
     dialogues = DEVICE.imageDialogues
@@ -119,10 +125,22 @@ end
 
 local function selectDialogue(period, excluded)
     local value = validHeart()
+    local isLowBattery = not DEVICE.imageText and batteryLevel and batteryLevel <= 20
     if not DEVICE.imageText and period and value and value > 94 then
         return heartDialogue(value)
     end
-    if period then return pickDialogue(period, excluded) end
+    if period then
+        if isLowBattery and batteryLevel <= 10 and math.random(1, 3) == 1 then
+            return pickDialogue("lowBattery", excluded)
+        end
+        return pickDialogue(period, excluded)
+    end
+    if isLowBattery then
+        local chance = batteryLevel <= 10 and 2 or 4
+        if math.random(1, chance) == 1 then
+            return pickDialogue("lowBattery", excluded)
+        end
+    end
     if DEVICE.imageText then
         if scareEnabled and math.random(1, 1000) == 2 then return scareDialogue() end
     elseif step >= 500 then

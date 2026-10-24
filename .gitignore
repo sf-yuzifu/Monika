@@ -4,3 +4,14 @@ output
 build/
 dist/
 __pycache__/
+
+
+todo.md
+docs/astrobox-release.md
+tools/aod_drafts.py
+tools/dialogue_previews.py
+tools/posters.py
+tools/release.py
+tools/round_drafts.py
+.gitignore
+tools/test_static.py

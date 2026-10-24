@@ -75,7 +75,7 @@ local dialogues = {
 if DEVICE.imageText then
     dialogues = DEVICE.imageDialogues
     for category, entries in pairs(dialogues) do
-        for _, entry in ipairs(entries) do entry.category = category end
+        for _, entry in pairs(entries) do entry.category = category end
     end
 end
 
@@ -124,8 +124,8 @@ end
 local scareEnabled = DEVICE.enableScare ~= false
 local function toggleScareDialogue()
     scareEnabled = not scareEnabled
-    if DEVICE.imageText then
-        local entry = dialogues.daily[3]
+    if dialogues.toggle then
+        local entry = scareEnabled and dialogues.toggle[1] or dialogues.toggle[2]
         return { category = "toggle", image = entry.image, duration = entry.duration }
     end
     local text = scareEnabled and "恶作剧代码已恢复！做好心理准备哦，呵呵～"
@@ -135,9 +135,9 @@ end
 
 local function selectDialogue(period, excluded)
     local value = validHeart()
-    local isLowBattery = not DEVICE.imageText and batteryLevel and batteryLevel <= 20
-    local todayFestival = not DEVICE.imageText and dialogues.festival and dialogues.festival[os.date("%m-%d")]
-    if not DEVICE.imageText and period and value and value > 94 then
+    local isLowBattery = batteryLevel and batteryLevel <= 20
+    local todayFestival = dialogues.festival and dialogues.festival[os.date("%m-%d")]
+    if period and value and value > 94 then
         return heartDialogue(value)
     end
     if period then
@@ -158,9 +158,7 @@ local function selectDialogue(period, excluded)
             return pickDialogue("lowBattery", excluded)
         end
     end
-    if DEVICE.imageText then
-        if scareEnabled and math.random(1, 1000) == 2 then return scareDialogue() end
-    elseif step >= 500 then
+    if step >= 500 then
         local choice = math.random(1, 21)
         if choice == 6 then
             local thresholds = { 10000, 6000, 1000, 500 }
@@ -169,6 +167,8 @@ local function selectDialogue(period, excluded)
             end
         elseif choice == 7 and value then return heartDialogue(value)
         elseif scareEnabled and math.random(1, 1000) == 2 then return scareDialogue() end
+    elseif scareEnabled and math.random(1, 1000) == 2 then
+        return scareDialogue()
     end
     return pickDialogue("daily", excluded)
 end

@@ -2,6 +2,7 @@
 from lupa.lua54 import LuaRuntime
 import xml.etree.ElementTree as ET
 import struct
+from pathlib import Path
 from PIL import Image
 from build import resources, source_for
 from config import ROOT, load_devices
@@ -140,11 +141,11 @@ def main():
         source = source_for(config)
         selected = resources(config)
         packaged_names = {
-            (resource.removesuffix(".bin") + ".png") if path.suffix == ".png" else resource
+            Path(resource).with_suffix(".png").as_posix() if path.suffix == ".png" else resource
             for resource, path in selected.items()
         }
         dimensions = {
-            resource.removesuffix(".bin") + ".png" if path.suffix == ".png" else resource: image_size(path)
+            Path(resource).with_suffix(".png").as_posix() if path.suffix == ".png" else resource: image_size(path)
             for resource, path in selected.items()
         }
         assert dimensions["bg.png"] == (config["width"], config["height"])
@@ -156,7 +157,7 @@ def main():
             generated_source = (app / "monika.lua").read_text(encoding="utf-8")
             assert generated_source == source_for(devices[target]), f"{name}: stale project; run tools/build.py"
             for resource, path in selected.items():
-                filename = resource.removesuffix(".bin") + ".png" if path.suffix == ".png" else resource
+                filename = Path(resource).with_suffix(".png").as_posix() if path.suffix == ".png" else resource
                 assert (app / filename).read_bytes() == path.read_bytes(), (name, filename)
         for resource, path in selected.items():
             if path.suffix != ".png":
@@ -165,7 +166,7 @@ def main():
             assert data[:8] == b"\x89PNG\r\n\x1a\n"
             size = struct.unpack(">II", data[16:24])
             legacy = ROOT / "devices" / config["assets"] / resource
-            if legacy.exists():
+            if legacy.exists() and legacy != path:
                 old = legacy.read_bytes()
                 if old[:8] == b"\x89PNG\r\n\x1a\n":
                     old_size = struct.unpack(">II", old[16:24])
@@ -173,9 +174,6 @@ def main():
                     header = struct.unpack("<I", old[:4])[0]
                     old_size = ((header >> 10) & 2047, (header >> 21) & 2047)
                 assert size == old_size, (name, resource, size, old_size)
-            generated = project_path.parent / "app/_lua/monika" / path.name
-            if project_path.exists():
-                assert generated.read_bytes() == data, (name, resource)
         runtime = LuaRuntime(unpack_returned_tuples=True)
         used_images = set()
         def validate_image(path):
@@ -214,25 +212,24 @@ def main():
                 expected = config["fontSize"] if failure_mode == "first" else 14
                 assert probe.globals()._testFont() == expected
                 assert len(probe.globals().fontAttempts) == attempts, "font cache must prevent retries"
-        if not config["imageText"]:
-            runtime.execute('''
-                local random = math.random
-                math.random = function(a,b) if b == 21 then return 6 else return a end end
-                local cases = {
-                    {499, false}, {500,32}, {501,32},
-                    {999,32}, {1000,33}, {1001,33},
-                    {5999,33}, {6000,34}, {6001,34},
-                    {9999,34}, {10000,35}, {10001,35},
-                }
-                for _,case in ipairs(cases) do
-                    emit("healthStepCount",case[1]*256)
-                    local selected = _testSelect()
-                    if case[2] then check(selected == _testCatalog.steps[case[2]-31], "inclusive step threshold " .. case[1])
-                    else check(selected.category == "daily", "below 500 uses daily dialogue") end
-                end
-                emit("healthStepCount",0)
-                math.random = random
-            ''')
+        runtime.execute('''
+            local random = math.random
+            math.random = function(a,b) if b == 21 then return 6 else return a end end
+            local cases = {
+                {499, false}, {500,32}, {501,32},
+                {999,32}, {1000,33}, {1001,33},
+                {5999,33}, {6000,34}, {6001,34},
+                {9999,34}, {10000,35}, {10001,35},
+            }
+            for _,case in ipairs(cases) do
+                emit("healthStepCount",case[1]*256)
+                local selected = _testSelect()
+                if case[2] then check(selected == _testCatalog.steps[case[2]-31], "inclusive step threshold " .. case[1])
+                else check(selected.category == "daily", "below 500 uses daily dialogue") end
+            end
+            emit("healthStepCount",0)
+            math.random = random
+        ''')
         runtime.execute('''
             local random = math.random
             math.random = function(a,b) return a end
@@ -260,11 +257,17 @@ def main():
         duration = runtime.globals()._testDuration
         catalog = runtime.globals()._testCatalog
         if config["imageText"]:
-            assert sum(map(len, config["imageDialogues"].values())) == 21
+            total = sum(len(v) if isinstance(v, list) else len(v) for v in config["imageDialogues"].values())
+            assert total == 55
             for category, entries in config["imageDialogues"].items():
-                for index, entry in enumerate(entries, 1):
-                    assert 3000 <= entry["duration"] <= 8000
-                    assert duration(catalog[category][index]) == entry["duration"]
+                if isinstance(entries, dict):
+                    for key, entry in entries.items():
+                        assert 3000 <= entry["duration"] <= 8000
+                        assert duration(catalog[category][key]) == entry["duration"]
+                else:
+                    for index, entry in enumerate(entries, 1):
+                        assert 3000 <= entry["duration"] <= 8000
+                        assert duration(catalog[category][index]) == entry["duration"]
         else:
             for category in ["morning", "daily", "easterEgg"]:
                 for _, entry in catalog[category].items():
@@ -581,7 +584,7 @@ def main():
             for _, entry in entries.items():
                 if entry.image:
                     runtime.globals().validateImage("assets/" + entry.image)
-        assert bool(runtime.eval('subscriptions.healthHeartRate ~= nil')) != config["imageText"]
+        assert bool(runtime.eval('subscriptions.healthHeartRate ~= nil')) is True
         assert packaged_names <= used_images, (name, "unexercised resource paths", packaged_names - used_images)
         print(f"PASS {name}: Lua 5.4, {len(used_images)} resource paths, data, bubbling, delayed timers, screen lifecycle")
 

@@ -10,12 +10,11 @@ from pathlib import Path
 from PIL import Image
 
 from config import ROOT, load_devices
-from previews import generate as generate_previews
 
 
 def lua(value):
     if isinstance(value, dict):
-        return "{" + ",".join(f"{key}={lua(item)}" for key, item in value.items()) + "}"
+        return "{" + ",".join(f"[{json.dumps(key)}]={lua(item)}" for key, item in value.items()) + "}"
     if isinstance(value, list):
         return "{" + ",".join(map(lua, value)) + "}"
     if isinstance(value, bool):
@@ -31,7 +30,7 @@ def source_for(config):
     layout = (ROOT / "src/ui.lua").read_text(encoding="utf-8")
     subscriptions = (ROOT / "src/subscriptions.lua").read_text(encoding="utf-8")
     runtime = (ROOT / "src/runtime.lua").read_text(encoding="utf-8")
-    mapping = {name: name.removesuffix(".bin") + ".png"
+    mapping = {name: Path(name).with_suffix(".png").as_posix()
                for name, path in resources(config).items() if path.suffix == ".png"}
     resource_map = "local PNG_ASSETS = {" + ",".join(f"[{lua(key)}]={lua(value)}" for key, value in mapping.items()) + "}\n"
     return "local DEVICE = " + lua(config) + "\n" + resource_map + "\n".join([common, dialogue, layout, subscriptions, runtime])
@@ -42,16 +41,22 @@ def resources(config):
     assets = {path.relative_to(folder).as_posix(): path for path in folder.rglob("*.bin")}
     for path in (ROOT / "assets/common").glob("*.png"):
         assets[path.stem + ".bin"] = path
-    for path in folder.glob("*.png"):
+    for path in folder.rglob("*.png"):
         if path.name == "preview.png":
             continue
+        rel = path.relative_to(folder).as_posix()
+        assets[rel] = path
         assets[path.stem + ".bin"] = path
     required = {f"{i}.bin" for i in range(10)} | {f"num{i}.bin" for i in range(10)}
     required.update(["bg.bin", "bg_n.bin", "eye_close.bin", "eye_close_n.bin", "smile.bin", "smile_n.bin",
                      "scare.bin", "msg.bin", "ap.bin", "num%.bin", "num_mao.bin", "num_gang.bin",
                      "sun.bin", "mon.bin", "tue.bin", "wed.bin", "thu.bin", "fri.bin", "sat.bin"])
     if config["imageText"]:
-        required.update(entry["image"] for entries in config["imageDialogues"].values() for entry in entries)
+        for entries in config["imageDialogues"].values():
+            if isinstance(entries, dict):
+                required.update(entry["image"] for entry in entries.values())
+            else:
+                required.update(entry["image"] for entry in entries)
     missing = required - assets.keys()
     if missing:
         raise FileNotFoundError(f"{config['assets']}: missing {sorted(missing)}")
@@ -94,7 +99,6 @@ def main():
         if (output / "app").exists():
             shutil.rmtree(output / "app")
         app.mkdir(parents=True, exist_ok=True)
-        generate_previews(config, assets, output / "previews")
         (output / "images").mkdir(exist_ok=True)
         (output / "output").mkdir(exist_ok=True)
         for relative, asset in assets.items():

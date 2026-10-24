@@ -23,13 +23,11 @@ local function subscribeData(dataman, watchface)
     dataman.subscribe("dateDay", watchface.dateCont.widget, function(obj, value)
         dateDigits(watchface.dateContChild4, watchface.dateContChild5, value)
     end)
-    if not DEVICE.imageText then
-        dataman.subscribe("healthHeartRate", watchface.objImage, function(obj, value)
-            heart = value // 256
-            heartUpdatedAt = os.time()
-        end)
-        dataman.subscribe("healthStepCount", watchface.objImage, function(obj, value)
-            step = value // 256
-        end)
-    end
+    dataman.subscribe("healthHeartRate", watchface.objImage, function(obj, value)
+        heart = value // 256
+        heartUpdatedAt = os.time()
+    end)
+    dataman.subscribe("healthStepCount", watchface.objImage, function(obj, value)
+        step = value // 256
+    end)
 end

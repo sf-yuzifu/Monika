@@ -506,96 +506,242 @@
     "imageDialogues": {
       "morning": [
         {
-          "image": "text/text1.bin",
-          "duration": 4200
+          "image": "text/morning_1.png",
+          "duration": 5280
         },
         {
-          "image": "text/text2.bin",
-          "duration": 4200
+          "image": "text/morning_2.png",
+          "duration": 5640
         },
         {
-          "image": "text/text3.bin",
-          "duration": 4200
+          "image": "text/morning_3.png",
+          "duration": 5820
         },
         {
-          "image": "text/text4.bin",
-          "duration": 4200
+          "image": "text/morning_4.png",
+          "duration": 6360
         }
       ],
       "afternoon": [
         {
-          "image": "text/text5.bin",
-          "duration": 3600
+          "image": "text/afternoon_1.png",
+          "duration": 5640
         },
         {
-          "image": "text/text6.bin",
-          "duration": 3600
+          "image": "text/afternoon_2.png",
+          "duration": 5640
         },
         {
-          "image": "text/text7.bin",
-          "duration": 4200
+          "image": "text/afternoon_3.png",
+          "duration": 5820
         },
         {
-          "image": "text/text8.bin",
-          "duration": 4000
+          "image": "text/afternoon_4.png",
+          "duration": 6180
         }
       ],
       "night": [
         {
-          "image": "text/text9.bin",
-          "duration": 4400
+          "image": "text/night_1.png",
+          "duration": 6180
         },
         {
-          "image": "text/text10.bin",
-          "duration": 4600
+          "image": "text/night_2.png",
+          "duration": 5640
         },
         {
-          "image": "text/text11.bin",
-          "duration": 4800
+          "image": "text/night_3.png",
+          "duration": 5280
         },
         {
-          "image": "text/text12.bin",
-          "duration": 4000
+          "image": "text/night_4.png",
+          "duration": 5820
         }
       ],
       "daily": [
         {
-          "image": "text/text13.bin",
-          "duration": 3600
+          "image": "text/daily_1.png",
+          "duration": 6000
         },
         {
-          "image": "text/text14.bin",
-          "duration": 4400
+          "image": "text/daily_2.png",
+          "duration": 6000
         },
         {
-          "image": "text/text15.bin",
-          "duration": 3700
+          "image": "text/daily_3.png",
+          "duration": 5820
         },
         {
-          "image": "text/text16.bin",
-          "duration": 4000
+          "image": "text/daily_4.png",
+          "duration": 3660
         },
         {
-          "image": "text/text17.bin",
-          "duration": 3600
+          "image": "text/daily_5.png",
+          "duration": 5460
         },
         {
-          "image": "text/text18.bin",
-          "duration": 4000
+          "image": "text/daily_6.png",
+          "duration": 6000
         },
         {
-          "image": "text/text19.bin",
-          "duration": 4000
+          "image": "text/daily_7.png",
+          "duration": 6000
         },
         {
-          "image": "text/text20.bin",
-          "duration": 3800
+          "image": "text/daily_8.png",
+          "duration": 6180
+        },
+        {
+          "image": "text/daily_9.png",
+          "duration": 5100
+        },
+        {
+          "image": "text/daily_10.png",
+          "duration": 5820
+        },
+        {
+          "image": "text/daily_11.png",
+          "duration": 5820
+        },
+        {
+          "image": "text/daily_12.png",
+          "duration": 5460
+        },
+        {
+          "image": "text/daily_13.png",
+          "duration": 5820
+        },
+        {
+          "image": "text/daily_14.png",
+          "duration": 6180
+        },
+        {
+          "image": "text/daily_15.png",
+          "duration": 5280
+        },
+        {
+          "image": "text/daily_16.png",
+          "duration": 5640
+        },
+        {
+          "image": "text/daily_17.png",
+          "duration": 6180
+        },
+        {
+          "image": "text/daily_18.png",
+          "duration": 5820
+        },
+        {
+          "image": "text/daily_19.png",
+          "duration": 5640
+        }
+      ],
+      "steps": [
+        {
+          "image": "text/steps_1.png",
+          "duration": 5100
+        },
+        {
+          "image": "text/steps_2.png",
+          "duration": 5460
+        },
+        {
+          "image": "text/steps_3.png",
+          "duration": 5640
+        },
+        {
+          "image": "text/steps_4.png",
+          "duration": 6360
+        }
+      ],
+      "heart": [
+        {
+          "image": "text/heart_1.png",
+          "duration": 4560
+        },
+        {
+          "image": "text/heart_2.png",
+          "duration": 5280
+        },
+        {
+          "image": "text/heart_3.png",
+          "duration": 5280
+        },
+        {
+          "image": "text/heart_4.png",
+          "duration": 5280
+        },
+        {
+          "image": "text/heart_5.png",
+          "duration": 5820
         }
       ],
       "easterEgg": [
         {
-          "image": "text/text21.bin",
-          "duration": 3800
+          "image": "text/easterEgg_1.png",
+          "duration": 5100
+        }
+      ],
+      "lowBattery": [
+        {
+          "image": "text/lowBattery_1.png",
+          "duration": 5280
+        },
+        {
+          "image": "text/lowBattery_2.png",
+          "duration": 5280
+        },
+        {
+          "image": "text/lowBattery_3.png",
+          "duration": 5100
+        },
+        {
+          "image": "text/lowBattery_4.png",
+          "duration": 5280
+        }
+      ],
+      "festival": {
+        "01-01": {
+          "image": "text/fest_0101.png",
+          "duration": 5640
+        },
+        "02-14": {
+          "image": "text/fest_0214.png",
+          "duration": 5640
+        },
+        "05-20": {
+          "image": "text/fest_0520.png",
+          "duration": 5460
+        },
+        "09-22": {
+          "image": "text/fest_0922.png",
+          "duration": 5820
+        },
+        "10-31": {
+          "image": "text/fest_1031.png",
+          "duration": 5820
+        },
+        "12-24": {
+          "image": "text/fest_1224.png",
+          "duration": 6000
+        },
+        "12-25": {
+          "image": "text/fest_1225.png",
+          "duration": 5640
+        },
+        "12-31": {
+          "image": "text/fest_1231.png",
+          "duration": 6000
+        }
+      },
+      "toggle": [
+        {
+          "image": "text/toggle_1.png",
+          "duration": 5100
+        },
+        {
+          "image": "text/toggle_2.png",
+          "duration": 4920
         }
       ]
     }

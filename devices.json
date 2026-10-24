@@ -1168,5 +1168,363 @@
   },
   "band11": {
     "packageAlias": "band10"
+  },
+  "s4": {
+    "previewShape": "circle",
+    "width": 466,
+    "height": 466,
+    "deviceType": 462,
+    "assets": "s4",
+    "fontSize": 20,
+    "touchMaxY": 175,
+    "touchBatteryMinY": 410,
+    "timeY": 250,
+    "dateY": 354,
+    "talkTimeY": 175,
+    "talkDateY": 268,
+    "imageText": false,
+    "fonts": [
+      "MiSans-Medium",
+      "misansw_Medium",
+      "MiSans-Demibold",
+      "misansw_demibold"
+    ],
+    "layout": {
+      "groups": [
+        {
+          "name": "chargeCont",
+          "x": 0,
+          "y": 420,
+          "children": [
+            {
+              "name": "chargeImg",
+              "image": "ap.bin",
+              "x": 168
+            },
+            {
+              "name": "chargeContChild1",
+              "image": "num1.bin",
+              "x": 198
+            },
+            {
+              "name": "chargeContChild2",
+              "image": "num0.bin",
+              "x": 220
+            },
+            {
+              "name": "chargeContChild3",
+              "image": "num0.bin",
+              "x": 241
+            },
+            {
+              "name": "chargeContChild4",
+              "image": "num%.bin",
+              "x": 263
+            }
+          ]
+        },
+        {
+          "name": "time",
+          "x": 0,
+          "y": 250,
+          "children": [
+            {
+              "name": "timeHourHigh",
+              "image": "0.bin",
+              "x": 52
+            },
+            {
+              "name": "timeHourLow",
+              "image": "0.bin",
+              "x": 120
+            },
+            {
+              "name": "timeGang",
+              "image": "num_mao.bin",
+              "x": 188
+            },
+            {
+              "name": "timeMinuteHigh",
+              "image": "0.bin",
+              "x": 257
+            },
+            {
+              "name": "timeMinuteLow",
+              "image": "0.bin",
+              "x": 325
+            }
+          ]
+        },
+        {
+          "name": "dateCont",
+          "x": 0,
+          "y": 354,
+          "children": [
+            {
+              "name": "dateContChild1",
+              "image": "num0.bin",
+              "x": 118
+            },
+            {
+              "name": "dateContChild2",
+              "image": "num8.bin",
+              "x": 137
+            },
+            {
+              "name": "dateContChild3",
+              "image": "num_gang.bin",
+              "x": 156
+            },
+            {
+              "name": "dateContChild4",
+              "image": "num1.bin",
+              "x": 175
+            },
+            {
+              "name": "dateContChild5",
+              "image": "num6.bin",
+              "x": 194
+            },
+            {
+              "name": "dateWeek",
+              "image": "mon.bin",
+              "x": 254
+            }
+          ]
+        },
+        {
+          "name": "msg",
+          "x": 0,
+          "y": 300,
+          "children": [
+            {
+              "name": "msgBox",
+              "image": "msg.bin",
+              "x": 43,
+              "y": 0
+            }
+          ]
+        }
+      ],
+      "eyeX": 0,
+      "eyeY": 95,
+      "text": {
+        "w": 348,
+        "h": 68,
+        "x": 59,
+        "y": 24
+      },
+      "battery": [
+        [
+          189,
+          219,
+          241
+        ],
+        [
+          179,
+          209,
+          230,
+          252
+        ],
+        [
+          168,
+          198,
+          220,
+          241,
+          263
+        ]
+      ]
+    },
+    "previewSize": [
+      464,
+      464
+    ],
+    "touchBatteryBounds": [
+      168,
+      410,
+      299,
+      466
+    ]
+  },
+  "s5_46": {
+    "previewShape": "circle",
+    "width": 480,
+    "height": 480,
+    "deviceType": 562,
+    "assets": "s5_46",
+    "fontSize": 20,
+    "touchMaxY": 175,
+    "touchBatteryMinY": 424,
+    "timeY": 258,
+    "dateY": 365,
+    "talkTimeY": 175,
+    "talkDateY": 268,
+    "imageText": false,
+    "fonts": [
+      "MiSans-Medium",
+      "misansw_Medium",
+      "MiSans-Demibold",
+      "misansw_demibold"
+    ],
+    "layout": {
+      "groups": [
+        {
+          "name": "chargeCont",
+          "x": 0,
+          "y": 434,
+          "children": [
+            {
+              "name": "chargeImg",
+              "image": "ap.bin",
+              "x": 175
+            },
+            {
+              "name": "chargeContChild1",
+              "image": "num1.bin",
+              "x": 205
+            },
+            {
+              "name": "chargeContChild2",
+              "image": "num0.bin",
+              "x": 227
+            },
+            {
+              "name": "chargeContChild3",
+              "image": "num0.bin",
+              "x": 248
+            },
+            {
+              "name": "chargeContChild4",
+              "image": "num%.bin",
+              "x": 270
+            }
+          ]
+        },
+        {
+          "name": "time",
+          "x": 0,
+          "y": 258,
+          "children": [
+            {
+              "name": "timeHourHigh",
+              "image": "0.bin",
+              "x": 59
+            },
+            {
+              "name": "timeHourLow",
+              "image": "0.bin",
+              "x": 127
+            },
+            {
+              "name": "timeGang",
+              "image": "num_mao.bin",
+              "x": 195
+            },
+            {
+              "name": "timeMinuteHigh",
+              "image": "0.bin",
+              "x": 264
+            },
+            {
+              "name": "timeMinuteLow",
+              "image": "0.bin",
+              "x": 332
+            }
+          ]
+        },
+        {
+          "name": "dateCont",
+          "x": 0,
+          "y": 365,
+          "children": [
+            {
+              "name": "dateContChild1",
+              "image": "num0.bin",
+              "x": 125
+            },
+            {
+              "name": "dateContChild2",
+              "image": "num8.bin",
+              "x": 144
+            },
+            {
+              "name": "dateContChild3",
+              "image": "num_gang.bin",
+              "x": 163
+            },
+            {
+              "name": "dateContChild4",
+              "image": "num1.bin",
+              "x": 182
+            },
+            {
+              "name": "dateContChild5",
+              "image": "num6.bin",
+              "x": 201
+            },
+            {
+              "name": "dateWeek",
+              "image": "mon.bin",
+              "x": 261
+            }
+          ]
+        },
+        {
+          "name": "msg",
+          "x": 0,
+          "y": 300,
+          "children": [
+            {
+              "name": "msgBox",
+              "image": "msg.bin",
+              "x": 50,
+              "y": 0
+            }
+          ]
+        }
+      ],
+      "eyeX": 0,
+      "eyeY": 98,
+      "text": {
+        "w": 348,
+        "h": 68,
+        "x": 66,
+        "y": 24
+      },
+      "battery": [
+        [
+          196,
+          226,
+          248
+        ],
+        [
+          186,
+          216,
+          237,
+          259
+        ],
+        [
+          175,
+          205,
+          227,
+          248,
+          270
+        ]
+      ]
+    },
+    "touchBatteryBounds": [
+      175,
+      424,
+      306,
+      480
+    ]
+  },
+  "s5_41": {
+    "extends": "s4",
+    "deviceType": 562,
+    "previewSize": [
+      480,
+      480
+    ]
   }
 }

@@ -10,6 +10,7 @@ from pathlib import Path
 from PIL import Image
 
 from config import ROOT, load_devices
+from previews import generate as generate_preview
 
 
 def lua(value):
@@ -82,7 +83,7 @@ def main():
     parser.add_argument("--device", choices=["all", *devices], default="all")
     parser.add_argument("--compiler", type=Path)
     parser.add_argument("--id", default="979825266001")
-    parser.add_argument("--version", type=int, default=3)
+    parser.add_argument("--version", type=int, default=4)
     args = parser.parse_args()
     if not re.fullmatch(r"(?:[0-9]{9}|[0-9]{12})", args.id) or not 0 <= args.version <= 0xFFFFFFFF:
         parser.error("ID must be 9 or 12 ASCII digits; version must fit UInt32")
@@ -92,6 +93,11 @@ def main():
     for name, config in targets.items():
         source = source_for(config)
         prepared[name] = (source, resources(config))
+    seen_previews = set()
+    for name, config in targets.items():
+        if config["assets"] not in seen_previews:
+            generate_preview(config, prepared[name][1])
+            seen_previews.add(config["assets"])
     for name, config in targets.items():
         source, assets = prepared[name]
         output = ROOT / "build" / name

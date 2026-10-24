@@ -33,22 +33,24 @@ def generate(config, assets, output=None):
         if group["name"] == "chargeCont":
             positions = config["layout"]["battery"][1]
             icon = group["children"][0]
-            paste("ap.bin", x + positions[0], y + icon.get("y", 0))
-            for i, name in enumerate(["num9.bin", "num9.bin", "num%.bin"], 1):
+            for i, name in reversed(list(enumerate(["num9.bin", "num9.bin", "num%.bin"], 1))):
                 paste(name, x + positions[i], y)
+            paste("ap.bin", x + positions[0], y + icon.get("y", 0))
             continue
         for child in group["children"]:
             paste(replacements.get(child["name"], child["image"]),
                   x + child.get("x", 0), y + child.get("y", 0))
 
     shape = config["previewShape"]
-    radius = width / 2 if shape == "capsule" else shape
     factor = 4
     mask = Image.new("L", (width * factor, height * factor), 0)
-    ImageDraw.Draw(mask).rounded_rectangle(
-        (0, 0, width * factor - 1, height * factor - 1),
-        radius=round(radius * factor), fill=255,
-    )
+    bounds = (0, 0, width * factor - 1, height * factor - 1)
+    draw = ImageDraw.Draw(mask)
+    if shape == "circle":
+        draw.ellipse(bounds, fill=255)
+    else:
+        radius = width / 2 if shape == "capsule" else shape
+        draw.rounded_rectangle(bounds, radius=round(radius * factor), fill=255)
     canvas.putalpha(mask.resize((width, height), Image.Resampling.LANCZOS))
     destination = ROOT / "devices" / config["assets"] / "preview.png"
     canvas.save(destination)

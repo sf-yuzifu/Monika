@@ -36,8 +36,13 @@
 | 小米手环 9 Pro | `band9pro` | 336×480 | 367 |
 | 小米手环 10 Pro | `band10pro` | 336×480 | 567 |
 | Redmi Watch 6 | `redmiwatch6` | 432×514 | 565 |
+| Xiaomi Watch S4 | `s4` | 466×466 | 462 |
+| Xiaomi Watch S5 46mm | `s5_46` | 480×480 | 562 |
+| Xiaomi Watch S5 41mm | `s5_41` | 466×466 | 562 |
 
 当前已完成工程生成与 Lua 模拟回归，统一构建后的安装兼容性和实际显示仍需真机验证。手环 11 共包方式参考倒数日表盘；手环 10 Pro 继承手环 9 Pro 的布局与素材，使用独立设备类型编译。
+
+S5 41mm 继承 S4 的 466×466 素材和布局，使用独立 S5 包；S4 编译缩略图为 464×464，S5 41mm 为 480×480。圆屏使用 RW6 原尺寸数字及对话框，对话时分 y=175、日期 y=268、对话框 y=300，电量素材底边距屏幕底部 6px。所有设备电量数字叠放顺序统一为百位 > 十位 > 个位 > 百分号。
 
 ## 开发
 
@@ -57,7 +62,7 @@ python tools/build.py --device redmiwatch6
 python tools/build.py --device band9 --compiler "<EasyFace目录>\Compiler.exe" --id 979825266001 --version 2
 ```
 
-生成工程位于 `build/<目标>/monika.fprj`，可通过 EasyFace 打开；成功编译的安装包位于 `dist/monika-<目标>.face`。默认表盘 ID 为 `979825266001`，发布版本为 `3`。编译脚本同步写入 Gen2 包头；`--id` / `--version` 可覆盖默认值。
+生成工程位于 `build/<目标>/monika.fprj`，可通过 EasyFace 打开；成功编译的安装包位于 `dist/monika-<目标>.face`。默认表盘 ID 为 `979825266001`，发布版本为 `4`。编译脚本同步写入 Gen2 包头；`--id` / `--version` 可覆盖默认值。
 
 `--device band11` 会生成 `band10` 工程，编译时同时输出 `monika-band10.face` 和 `monika-band11.face`。`build/`、`dist/` 均为忽略的构建产物，修改源码后重新生成。
 

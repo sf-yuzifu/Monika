@@ -193,6 +193,16 @@ def main():
                   "unused placeholder interfaces must remain absent")
             local background=clicks[1].obj.children[1]
             check(background.w == screenWidth and background.h == screenHeight, "real background dimensions")
+            local battery=clicks[1].obj.children[2]
+            local sub=subscriptions.systemStatusBattery
+            emit("systemStatusBattery",100*256)
+            check(battery.children[1].src:find("num%%"), "percent is bottom battery layer")
+            check(battery.children[4].src:find("num1"), "hundreds is highest digit layer")
+            emit("systemStatusBattery",99*256)
+            check(battery.children[2].src:find("num%%"), "two-digit percent stays below digits")
+            emit("systemStatusBattery",9*256)
+            check(battery.children[3].src:find("num%%"), "single-digit percent stays below digit")
+            emit("systemStatusBattery",100*256)
         ''')
         if not config["imageText"]:
             for failure_mode in ["first", "all"]:

@@ -89,7 +89,15 @@ local function createWatchface(parent)
         local container = imageGroup(face, { group.x, y })
         t[group.name] = container
         propertyCache[container.widget] = { y = y }
-        for _, child in ipairs(group.children) do
+        local children = group.children
+        local order = {}
+        if group.name == "chargeCont" then
+            -- LVGL draws later children on top: highest digit must be last.
+            for i = #children, 1, -1 do order[#order + 1] = children[i] end
+        else
+            order = children
+        end
+        for _, child in ipairs(order) do
             t[child.name] = container:setChild(imgPath(child.image), { x = child.x, y = child.y })
         end
     end
@@ -115,7 +123,10 @@ local function createWatchface(parent)
             dialogue = return_text()
             current_time = animationTime
             refreshUI()
-        elseif y >= DEVICE.touchBatteryMinY and MONIKA_STATE ~= STATE.SCARE then
+        elseif y >= DEVICE.touchBatteryMinY and MONIKA_STATE ~= STATE.SCARE and
+            (not DEVICE.touchBatteryBounds or
+             (x >= DEVICE.touchBatteryBounds[1] and y >= DEVICE.touchBatteryBounds[2] and
+              x <= DEVICE.touchBatteryBounds[3] and y <= DEVICE.touchBatteryBounds[4])) then
             syncAnimationTime()
             MONIKA_STATE = STATE.TALKING
             dialogue = toggleScareDialogue()

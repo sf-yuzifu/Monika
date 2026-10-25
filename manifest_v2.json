@@ -132,6 +132,17 @@
         }
       ]
     },
+    "xmws441": {
+      "version": "6",
+      "versionCode": 6,
+      "file_name": "release/monika-s4.bin",
+      "updatelogs": [
+        {
+          "version": "6",
+          "content": "统一多设备互动表盘；扩充对话、健康与节日联动；支持电量区域彩蛋开关；新增圆屏布局和原生 AOD。"
+        }
+      ]
+    },
     "xmws5": {
       "version": "6",
       "versionCode": 6,

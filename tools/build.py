@@ -12,7 +12,6 @@ from PIL import Image
 from config import ROOT, load_devices
 from previews import generate as generate_preview
 from aod import generate as generate_aod
-from aod_drafts import main as generate_aod_drafts
 
 
 def lua(value):
@@ -94,7 +93,6 @@ def main():
     parser.add_argument("--version", type=int, default=6)
     args = parser.parse_args()
     suffix = "-static" if args.static else ""
-    generate_aod_drafts()
     if not re.fullmatch(r"(?:[0-9]{9}|[0-9]{12})", args.id) or not 0 <= args.version <= 0xFFFFFFFF:
         parser.error("ID must be 9 or 12 ASCII digits; version must fit UInt32")
     selected = devices[args.device].get("packageAlias", args.device) if args.device != "all" else "all"

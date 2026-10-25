@@ -1,0 +1,92 @@
+name: Build and release watchfaces
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: windows-2022
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Read package version from AstroBox manifest
+        shell: pwsh
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          python tools/test_release_tag.py
+          if ($LASTEXITCODE -ne 0) { throw 'Release version tests failed' }
+          $version = python tools/release_tag.py "$env:RELEASE_TAG"
+          if ($LASTEXITCODE -ne 0) { throw 'Invalid release tag or manifest versionCode' }
+          "PACKAGE_VERSION=$version" >> $env:GITHUB_ENV
+
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt
+
+      - name: Download EasyFace 4.23
+        shell: pwsh
+        run: |
+          $zip = Join-Path $env:RUNNER_TEMP 'EasyFace423.zip'
+          Invoke-WebRequest -Uri 'https://github.com/m0tral/EasyFace/releases/download/v4.23/EasyFace_Gen2_CompilerV423.zip' -OutFile $zip
+          $hash = (Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($hash -ne '5b62773369c10c3402f369e8aa579f13393af359d0214c0d979464e5cc776cef') { throw 'EasyFace archive checksum mismatch' }
+          $compilerDir = Join-Path $env:RUNNER_TEMP 'EasyFace423'
+          Expand-Archive -LiteralPath $zip -DestinationPath $compilerDir
+          # The compiler auto-uploads if adb is beside it; CI only builds packages.
+          Remove-Item -LiteralPath (Join-Path $compilerDir 'adb.exe') -ErrorAction SilentlyContinue
+          "EASYFACE_COMPILER=$(Join-Path $compilerDir 'Compiler.exe')" >> $env:GITHUB_ENV
+
+      - name: Generate projects and run regression tests
+        run: |
+          python tools/build.py --version "$env:PACKAGE_VERSION"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python tools/test.py
+
+      - name: Compile interactive packages with AOD
+        run: python tools/build.py --compiler "$env:EASYFACE_COMPILER" --version "$env:PACKAGE_VERSION"
+
+      - name: Verify and checksum release assets
+        run: python tools/release_assets.py --version "$env:PACKAGE_VERSION"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: monika-${{ github.ref_name }}
+          path: |
+            dist/*.face
+            dist/SHA256SUMS.txt
+          if-no-files-found: error
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: monika-${{ github.ref_name }}
+          path: dist
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          gh release create "$RELEASE_TAG" dist/*.face dist/SHA256SUMS.txt \
+            --verify-tag --title "莫妮卡表盘 $RELEASE_TAG" --generate-notes

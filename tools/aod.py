@@ -15,13 +15,6 @@ def generate(config, assets, output):
     for path in (ROOT / "assets/aod" / family).glob("*.png"):
         if path.name in ("ap.png", "num%.png"): continue
         shutil.copyfile(path, images / path.name)
-    # Use the approved AOD draft as the editor/compilation preview.
-    # Rendering is performed by build.py once, outside this function.
-    draft = ROOT / "build/aod-drafts" / config.get("packageAlias", config.get("target", config["assets"])) / "preview.png"
-    if not draft.exists(): draft = ROOT / "build/aod-drafts" / config["assets"] / "preview.png"
-    with Image.open(draft) as preview:
-        preview.resize(tuple(config.get("previewSize", [config["width"], config["height"]])), Image.Resampling.LANCZOS).save(folder / "preview.png")
-    shutil.copyfile(folder / "preview.png", images / "preview.png")
     (folder / "output").mkdir(exist_ok=True)
     project = ET.Element("FaceProject", DeviceType=str(config["deviceType"]))
     screen = ET.SubElement(project, "Screen", Title="莫妮卡 AOD", Bitmap="preview.png")
@@ -59,4 +52,15 @@ def generate(config, assets, output):
                        bitmap=child["image"].replace(".bin",".png") if field not in sources else None,source=sources.get(field))
     path=folder/"monika.fprj"
     ET.ElementTree(project).write(path,encoding="utf-16",xml_declaration=True)
+    # Compose the native screen directly, so clean builds need no draft outputs.
+    preview = Image.new("RGBA", (config["width"], config["height"]), "black")
+    sample = {"timeHourHigh":"0.png", "timeHourLow":"8.png", "timeMinuteHigh":"4.png", "timeMinuteLow":"5.png",
+              "dateContChild1":"num0.png", "dateContChild2":"num9.png", "dateContChild4":"num2.png",
+              "dateContChild5":"num2.png", "dateWeek":"mon.png"}
+    for element in screen:
+        filename = element.get("Bitmap") or sample[element.get("Name")]
+        with Image.open(images / filename) as image:
+            preview.alpha_composite(image.convert("RGBA"), (int(element.get("X")), int(element.get("Y"))))
+    preview.resize(tuple(config.get("previewSize", preview.size)), Image.Resampling.LANCZOS).save(folder / "preview.png")
+    shutil.copyfile(folder / "preview.png", images / "preview.png")
     return path

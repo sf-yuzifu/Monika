@@ -72,6 +72,23 @@
    ```
 3. 表盘打包工具推荐使用 **[EasyFace](https://github.com/m0tral/EasyFace)**。
 
+### GitHub 自动发版
+
+将工作流提交到仓库后，推送 `v主版本.次版本.修订号` 标签即可触发自动构建，例如：
+
+```powershell
+git tag v1.2.0
+git push origin v1.2.0
+```
+
+GitHub Actions 会使用 Windows、Python 3.12 和校验过 SHA-256 的 EasyFace 4.23 编译全部互动版（含原生 AOD），通过回归及包头检查后创建 GitHub Release，上传 10 个 `.face` 和 `SHA256SUMS.txt`。静态版不会发布，也不会自动提交、修改 AstroBox 清单或回写 main。
+
+包头版本直接读取**标签对应提交中的 `manifest_v2.json` → `downloads` → `versionCode`**，不再从标签换算。所有设备条目的 `versionCode` 必须是相同的正整数，否则停止构建。例如标签为 `v1.2.0`、清单的 `versionCode` 为 `7`，生成的包头版本就是 `7`。标签只用于 GitHub Release 名称，目前接受正式版 `vX.Y.Z`，不接受 `-beta` 等后缀。
+
+每次发版先将全部设备的 `versionCode` 从 `6` 递增为 `7`、`8`……，并按需更新展示用 `version` 与更新日志；提交后再打标签。工作流只读取版本，不会自动加一或修改清单，也不校验它是否大于历史发布版本，请保持递增。
+
+首次使用需确认仓库 Actions 已启用、组织策略允许工作流创建 Release；无需额外配置 PAT，发布任务使用 GitHub 自动提供的令牌。构建失败时不会创建 Release，可查看 Actions 日志排查；同名 Release 已存在时创建会失败，不会覆盖已发布文件。
+
 ### 常用命令
 
 不需要互动时，可加 `--static` 构建静态版：强制使用日间背景，不显示对话、不眨眼、不切换日夜，也没有点击开关；时间、日期、星期、电量仍实时更新，原生 AOD 保留。

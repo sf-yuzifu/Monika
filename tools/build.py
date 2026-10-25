@@ -1,0 +1,161 @@
+"""Generate device-specific EasyFace projects and optionally compile watchface packages."""
+import argparse
+import json
+import re
+import shutil
+import struct
+import subprocess
+import xml.etree.ElementTree as ET
+from pathlib import Path
+from PIL import Image
+
+from config import ROOT, load_devices
+from previews import generate as generate_preview
+from aod import generate as generate_aod
+from aod_drafts import main as generate_aod_drafts
+
+
+def lua(value):
+    if isinstance(value, dict):
+        return "{" + ",".join(f"[{json.dumps(key)}]={lua(item)}" for key, item in value.items()) + "}"
+    if isinstance(value, list):
+        return "{" + ",".join(map(lua, value)) + "}"
+    if isinstance(value, bool):
+        return "true" if value else "false"
+    if isinstance(value, str):
+        return json.dumps(value, ensure_ascii=False)
+    return str(value)
+
+
+def source_for(config):
+    common = (ROOT / "src/monika.lua").read_text(encoding="utf-8")
+    dialogue = (ROOT / "src/dialogue.lua").read_text(encoding="utf-8")
+    layout = (ROOT / "src/ui.lua").read_text(encoding="utf-8")
+    subscriptions = (ROOT / "src/subscriptions.lua").read_text(encoding="utf-8")
+    runtime = (ROOT / "src/runtime.lua").read_text(encoding="utf-8")
+    mapping = {name: Path(name).with_suffix(".png").as_posix()
+               for name, path in resources(config).items() if path.suffix == ".png"}
+    resource_map = "local PNG_ASSETS = {" + ",".join(f"[{lua(key)}]={lua(value)}" for key, value in mapping.items()) + "}\n"
+    if config.get("static"):
+        runtime = (ROOT / "src/static.lua").read_text(encoding="utf-8")
+        dialogue = ""
+    return "local DEVICE = " + lua(config) + "\n" + resource_map + "\n".join([common, dialogue, layout, subscriptions, runtime])
+
+
+def resources(config):
+    folder = ROOT / "devices" / config["assets"]
+    assets = {path.relative_to(folder).as_posix(): path for path in folder.rglob("*.bin")}
+    for path in (ROOT / "assets/common").glob("*.png"):
+        assets[path.stem + ".bin"] = path
+    for path in folder.rglob("*.png"):
+        if path.name == "preview.png":
+            continue
+        rel = path.relative_to(folder).as_posix()
+        assets[rel] = path
+        assets[path.stem + ".bin"] = path
+    required = {f"{i}.bin" for i in range(10)} | {f"num{i}.bin" for i in range(10)}
+    required.update(["bg.bin", "bg_n.bin", "eye_close.bin", "eye_close_n.bin", "smile.bin", "smile_n.bin",
+                     "scare.bin", "msg.bin", "ap.bin", "num%.bin", "num_mao.bin", "num_gang.bin",
+                     "sun.bin", "mon.bin", "tue.bin", "wed.bin", "thu.bin", "fri.bin", "sat.bin"])
+    if config.get("static"):
+        required.difference_update(["bg_n.bin", "eye_close.bin", "eye_close_n.bin", "smile.bin", "smile_n.bin", "scare.bin", "msg.bin"])
+    elif config["imageText"]:
+        for entries in config["imageDialogues"].values():
+            if isinstance(entries, dict):
+                required.update(entry["image"] for entry in entries.values())
+            else:
+                required.update(entry["image"] for entry in entries)
+    missing = required - assets.keys()
+    if missing:
+        raise FileNotFoundError(f"{config['assets']}: missing {sorted(missing)}")
+    if any(not assets[name].stat().st_size for name in required):
+        raise ValueError("Empty image resource")
+    if not (folder / "preview.png").is_file():
+        raise FileNotFoundError(folder / "preview.png")
+    return {name: assets[name] for name in sorted(required)}
+
+
+def patch_metadata(path, face_id, version):
+    data = bytearray(path.read_bytes())
+    if len(data) < 168 or data[:4] != b"\x5a\xa5\x34\x12":
+        raise ValueError("Unexpected Gen2 package header")
+    data[40:58] = face_id.encode("ascii").ljust(18, b"\0")
+    struct.pack_into("<I", data, 4, version)
+    path.write_bytes(data)
+
+
+def main():
+    devices = load_devices()
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--device", choices=["all", *devices], default="all")
+    parser.add_argument("--compiler", type=Path)
+    parser.add_argument("--static", action="store_true", help="Daylight-only face without dialogue, blinking or interactions")
+    parser.add_argument("--id", default="979825266001")
+    parser.add_argument("--version", type=int, default=6)
+    args = parser.parse_args()
+    suffix = "-static" if args.static else ""
+    generate_aod_drafts()
+    if not re.fullmatch(r"(?:[0-9]{9}|[0-9]{12})", args.id) or not 0 <= args.version <= 0xFFFFFFFF:
+        parser.error("ID must be 9 or 12 ASCII digits; version must fit UInt32")
+    selected = devices[args.device].get("packageAlias", args.device) if args.device != "all" else "all"
+    targets = {name: config for name, config in devices.items() if not config.get("packageAlias") and selected in ("all", name)}
+    if args.static:
+        targets = {name: dict(config, static=True) for name, config in targets.items()}
+    prepared = {}
+    for name, config in targets.items():
+        source = source_for(config)
+        prepared[name] = (source, resources(config))
+    seen_previews = set()
+    for name, config in targets.items():
+        if config["assets"] not in seen_previews:
+            generate_preview(config, prepared[name][1])
+            seen_previews.add(config["assets"])
+    for name, config in targets.items():
+        source, assets = prepared[name]
+        output = ROOT / "build" / (name + suffix)
+        app = output / "app/_lua/monika"
+        if (output / "app").exists():
+            shutil.rmtree(output / "app")
+        app.mkdir(parents=True, exist_ok=True)
+        (output / "images").mkdir(exist_ok=True)
+        (output / "output").mkdir(exist_ok=True)
+        for relative, asset in assets.items():
+            if asset.suffix == ".png":
+                relative = str(Path(relative).with_suffix(".png"))
+            destination = app / relative
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(asset, destination)
+        (app / "monika.lua").write_text(source, encoding="utf-8")
+        with Image.open(ROOT / "devices" / config["assets"] / "preview.png") as preview:
+            preview.resize(tuple(config.get("previewSize", [config["width"], config["height"]])), Image.Resampling.LANCZOS).save(output / "preview.png")
+        shutil.copyfile(output / "preview.png", output / "images/preview.png")
+        project = ET.Element("FaceProject", DeviceType=str(config["deviceType"]))
+        screen = ET.SubElement(project, "Screen", Title="莫妮卡", Bitmap="preview.png")
+        ET.SubElement(screen, "Widget", Shape="34", Name="app__lua%2Fmonika%2Fmonika.lua", X="0", Y="0",
+                      Width=str(config["width"]), Height=str(config["height"]), Alpha="0", Visible_Src="0")
+        path = output / "monika.fprj"
+        ET.ElementTree(project).write(path, encoding="utf-16", xml_declaration=True)
+        generate_aod(dict(config, target=name), assets, output)
+        print(f"{name}: {path}")
+        if args.compiler:
+            staging = output / "compiled"
+            staging.mkdir(exist_ok=True)
+            fresh = staging / f"monika-{name}{suffix}.face"
+            fresh.unlink(missing_ok=True)
+            subprocess.run([str(args.compiler.resolve()), "-b", str(path), str(staging), fresh.name, "252661004"], check=True)
+            if not fresh.is_file():
+                raise RuntimeError(f"Compiler did not produce {name} package; inspect compiler errors above")
+            patch_metadata(fresh, args.id, args.version)
+            dist = ROOT / "dist"
+            dist.mkdir(exist_ok=True)
+            shutil.copyfile(fresh, dist / fresh.name)
+            for alias, entry in devices.items():
+                if entry.get("packageAlias") == name:
+                    shutil.copyfile(fresh, dist / f"monika-{alias}{suffix}.face")
+    for name, config in devices.items():
+        if config.get("packageAlias") and selected in ("all", config["packageAlias"]):
+            print(f"{name}: uses {config['packageAlias']} project/package")
+
+
+if __name__ == "__main__":
+    main()
